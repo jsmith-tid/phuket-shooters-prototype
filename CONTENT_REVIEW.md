@@ -38,7 +38,7 @@ Shared contact details extracted from the English pages:
 11. **Identification.** The booking page lists passport, ID card or driver’s licence, while the rules list passport or driver’s licence as examples. Confirm the accepted documents and any data-retention/privacy wording.
 12. **Staff details.** Confirm all 18 people remain current, consent to reuse portraits and biographies, preferred English spellings, roles and languages. Relative claims (“over 5 years”, “since 2021”) should be converted to dated source fields or reviewed periodically.
 13. **`Na` portrait source naming.** The live page labels this staff member “Na”, while the underlying image filename is `Serena Profile Picture.jpeg`. Confirm that the portrait/person mapping is correct.
-14. **Location coordinates.** The prototype uses a Google Maps address search rather than asserting a precise pin. The decorative coordinate treatment should be checked against an owner-confirmed location before production or replaced with a verified map pin.
+14. **Location coordinates.** The Find Us map uses the owner-supplied Google Business Profile, which resolves to `7.841593, 98.3562825`. Confirm the pin remains correct before production launch.
 15. **Nearby businesses.** The live Find Us page contains promotional descriptions/links for Dolphins’ Bay, Crocodile Show, Lion Land, Cobra Show and JuraFish. The prototype retains only the useful dolphin-show landmark and does not reproduce the promotional copy. Confirm whether any partnerships require these links to remain.
 16. **Affiliations.** The homepage displays six affiliation logos without explanatory copy. They are not shown in this prototype to avoid implying an unverified status. Confirm every current affiliation, correct organisation name, logo permission and approved wording before reinstating them.
 17. **Copyright/footer year.** The Wix pages currently display “© 2025”. The prototype uses the build/current year; confirm the desired company/legal entity and notice for production.
@@ -59,9 +59,9 @@ Shared contact details extracted from the English pages:
 - The booking form explicitly prevents submission and shows a prototype-only status.
 - Thai pages are generated from the same facts/data as English rather than copied from the existing Thai Wix pages.
 - Chinese, Arabic and Russian appear in the language selector as unavailable/coming soon. Arabic architecture is reserved for a later RTL implementation.
-- No embedded map, third-party font, analytics account or external runtime dependency is used.
+- The Find Us page loads a lazy Google Maps iframe from the owner-supplied Business Profile. No third-party font or analytics account is used.
 - Approximately 95% of visitors are reported to use mobile devices. This is treated as an internal design requirement rather than a customer-facing claim; mobile navigation, primary actions, review proof and commercial content receive priority.
-- The homepage Google Reviews panel shows a reusable snapshot of `4.9/5` from `126` reviews, checked on 26 September 2026, and links to an exact-name/address Google Maps search for the Business Profile. No review excerpts are reproduced. The snapshot should be rechecked before stakeholder demonstrations and production launch.
+- The homepage Google Reviews panel shows a reusable snapshot of `4.8/5` from `146` reviews, checked on 26 September 2026, and links to the owner-supplied Google Business Profile. No review excerpts are reproduced. The snapshot should be rechecked before stakeholder demonstrations and production launch.
 
 ## Deferred production work
 
@@ -70,6 +70,6 @@ Shared contact details extracted from the English pages:
 - Production canonical URLs, sitemap, indexable robots policy, redirects and verified structured data
 - Security headers and Cloudflare Pages configuration
 - Production analytics consent and vendor integration
-- Verified map pin and optional privacy-reviewed map embed
+- Privacy and consent review for the Google Maps embed
 - Image rights/consent audit and replacement photography
 - Chinese, Arabic/RTL and Russian translations
