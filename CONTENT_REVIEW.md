@@ -60,6 +60,8 @@ Shared contact details extracted from the English pages:
 - Thai pages are generated from the same facts/data as English rather than copied from the existing Thai Wix pages.
 - Chinese, Arabic and Russian appear in the language selector as unavailable/coming soon. Arabic architecture is reserved for a later RTL implementation.
 - No embedded map, third-party font, analytics account or external runtime dependency is used.
+- Approximately 95% of visitors are reported to use mobile devices. This is treated as an internal design requirement rather than a customer-facing claim; mobile navigation, primary actions, review proof and commercial content receive priority.
+- The homepage Google Reviews panel shows a reusable snapshot of `4.9/5` from `126` reviews, checked on 26 September 2026, and links to an exact-name/address Google Maps search for the Business Profile. No review excerpts are reproduced. The snapshot should be rechecked before stakeholder demonstrations and production launch.
 
 ## Deferred production work
 

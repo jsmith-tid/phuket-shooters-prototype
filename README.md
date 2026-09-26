@@ -35,6 +35,8 @@ Every route is generated in both languages. English uses the requested paths (`/
 
 The site ships generated HTML, one CSS file and a small progressive-enhancement script. It is not a client-side SPA and has no Wix runtime dependency.
 
+The project is mobile-first in product priority: approximately 95% of current visitors use mobile devices. Navigation, hero actions, review proof, prices and enquiry fields are therefore ordered and sized for narrow touch screens first, with tablet and desktop layouts progressively adding space and columns.
+
 ## Edit content
 
 ### Prices and packages
@@ -58,6 +60,10 @@ Place the corresponding optimised portrait at `public/assets/images/<id>.jpg`. D
 Shared business facts and translated safety/staff content live in `src/content/site.js`. Page-specific translated copy lives in `src/content/pages.js`. The helper `t(english, thai)` keeps both language values adjacent for review.
 
 Controlled rules should be changed only from approved source wording. Thai content, particularly legal/safety language, requires native-speaker and owner review before production.
+
+### Google rating
+
+The Google rating, review count, verification date and Business Profile link are stored once in `business.reviews` in `src/content/site.js`. Update all four together after checking the live listing. The homepage deliberately links to Google rather than reproducing review excerpts.
 
 ### Add another language
 
@@ -95,6 +101,7 @@ Buttons expose semantic `data-event` hooks. The small event adapter dispatches a
 - `phone_click`
 - `maps_click`
 - `language_change`
+- `reviews_click`
 
 No analytics vendor or production account is connected.
 

@@ -4,7 +4,7 @@ const copy = {
   en: {
     skip: 'Skip to content', menu: 'Menu', close: 'Close', prototype: 'Unofficial prototype · No bookings are submitted',
     pricesCta: 'See prices', bookCta: 'Book / enquire', whatsapp: 'WhatsApp us', call: 'Call us', directions: 'Open directions',
-    homeTitle: 'A safer, clearer way to experience shooting in Phuket',
+    homeTitle: 'Experience shooting in Phuket',
     homeIntro: 'Visit a purpose-built range in Chalong with experienced safety staff on hand. Choose from firearms, archery, crossbows and B.B. guns.',
     experiences: 'Choose your experience', firearms: 'Pistols, rifles & shotguns', firearmsText: 'The main 25m range has 12 shooting bays and more than 30 firearms available under staff supervision.',
     alternatives: 'Archery, crossbows & B.B. guns', alternativesText: 'Available on the other ranges, including options for visitors under 20 who cannot use firearms under Thai law.',
@@ -21,6 +21,7 @@ const copy = {
     findTitle: 'How to find us', findIntro: 'Practical details for your visit to the range in Chalong.', address: 'Address', hours: 'Opening hours', contact: 'Contact', nearby: 'Nearby landmark', landmark: 'The live site describes the range as close to the Phuket Dolphin show in Palai.', mapNote: 'Directions open in Google Maps. The prototype does not embed a third-party map.',
     galleryTitle: 'Gallery', galleryIntro: 'A curated selection from the current website, kept intentionally smaller for faster loading and easier browsing.',
     footerExplore: 'Explore', footerVisit: 'Visit', sourceNote: 'Prototype content audited from the live English site in September 2026.',
+    reviewsLabel: 'Google Reviews', reviewsCount: 'reviews', reviewsLink: 'Read reviews on Google',
     comingSoon: 'Coming soon', language: 'Language', english: 'English', thai: 'ไทย', chinese: 'Chinese', arabic: 'Arabic', russian: 'Russian'
   },
   th: {
@@ -42,6 +43,7 @@ const copy = {
     findTitle: 'วิธีเดินทาง', findIntro: 'รายละเอียดสำหรับการเดินทางมายังสนามในฉลอง', address: 'ที่อยู่', hours: 'เวลาเปิดทำการ', contact: 'ติดต่อ', nearby: 'สถานที่ใกล้เคียง', landmark: 'เว็บไซต์ปัจจุบันระบุว่าสนามอยู่ใกล้กับโชว์โลมาภูเก็ตในป่าหล่าย', mapNote: 'เส้นทางจะเปิดใน Google Maps ต้นแบบนี้ไม่ได้ฝังแผนที่ของบุคคลที่สาม',
     galleryTitle: 'แกลเลอรี', galleryIntro: 'ภาพคัดสรรจากเว็บไซต์ปัจจุบัน ลดจำนวนโดยตั้งใจเพื่อให้โหลดเร็วและเลือกชมได้ง่ายขึ้น',
     footerExplore: 'สำรวจ', footerVisit: 'เยี่ยมชม', sourceNote: 'เนื้อหาต้นแบบตรวจสอบจากเว็บไซต์ภาษาอังกฤษในเดือนกันยายน 2026',
+    reviewsLabel: 'รีวิวบน Google', reviewsCount: 'รีวิว', reviewsLink: 'อ่านรีวิวบน Google',
     comingSoon: 'เร็ว ๆ นี้', language: 'ภาษา', english: 'English', thai: 'ไทย', chinese: 'จีน', arabic: 'อารบิก', russian: 'รัสเซีย'
   }
 };

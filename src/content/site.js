@@ -9,6 +9,13 @@ const business = {
   email: 'info@phuketshooters.com',
   whatsapp: 'https://wa.me/66811032598',
   map: 'https://www.google.com/maps/search/?api=1&query=33%2C%2054%20Soi%20Palai%2C%20Chalong%2C%20Phuket%2083130',
+  reviews: {
+    provider: 'Google',
+    rating: 4.9,
+    count: 126,
+    checkedAt: '2026-09-26',
+    url: 'https://www.google.com/maps/search/?api=1&query=Phuket%20Shooters%20Shooting%20Range%2C%2033%2054%20Soi%20Palai%2C%20Chalong%2C%20Phuket'
+  },
   hours: t('Open daily, 09:00–18:00', 'เปิดทุกวัน 09:00–18:00 น.'),
   opened: t('Opened October 2024', 'เปิดให้บริการเมื่อเดือนตุลาคม 2024')
 };
