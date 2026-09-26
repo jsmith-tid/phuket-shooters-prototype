@@ -96,7 +96,7 @@ function coursesPage(lang) {
 
 function teamPage(lang) {
   const c=copy[lang];
-  return `${pageHeader('Phuket Shooters',c.teamTitle,c.teamIntro)}<section class="section wrap"><div class="team-grid">${staff.map(([id,name,role,bio,languages])=>`<article class="staff-card"><img src="${asset(`images/${id}.jpg`)}" loading="lazy" alt="${lang==='en'?`${name}, ${value(role,lang)} at Phuket Shooters`:`${name} ${value(role,lang)} ที่ Phuket Shooters`}"><div><p class="staff-card__role">${value(role,lang)}</p><h2>${name}</h2><p>${value(bio,lang)}</p><small><b>${c.languages}:</b> ${languages}</small></div></article>`).join('')}</div></section>`;
+  return `${pageHeader('Phuket Shooters',c.teamTitle,c.teamIntro)}<section class="section wrap"><div class="team-grid">${staff.map(([id,name,role,bio,languages])=>`<article class="staff-card" data-staff="${id}"><div class="staff-card__portrait"><img src="${asset(`images/${id}.jpg`)}" loading="lazy" alt="${lang==='en'?`${name}, ${value(role,lang)} at Phuket Shooters`:`${name} ${value(role,lang)} ที่ Phuket Shooters`}"></div><div><p class="staff-card__role">${value(role,lang)}</p><h2>${name}</h2><p>${value(bio,lang)}</p><small><b>${c.languages}:</b> ${languages}</small></div></article>`).join('')}</div></section>`;
 }
 
 function rulesPage(lang) {
