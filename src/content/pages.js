@@ -4,7 +4,7 @@ const copy = {
   en: {
     skip: 'Skip to content', menu: 'Menu', close: 'Close', prototype: 'Unofficial prototype · No bookings are submitted',
     pricesCta: 'See prices', bookCta: 'Book / enquire', whatsapp: 'WhatsApp us', call: 'Call us', directions: 'Open directions',
-    homeTitle: 'Experience shooting in Phuket',
+    homeTitle: 'Professional Range. Expert Supervision.',
     homeIntro: 'Visit a purpose-built range in Chalong with experienced safety staff on hand. Choose from firearms, archery, crossbows and B.B. guns.',
     experiences: 'Choose your experience', firearms: 'Pistols, rifles & shotguns', firearmsText: 'The main 25m range has 12 shooting bays and more than 30 firearms available under staff supervision.',
     alternatives: 'Archery, crossbows & B.B. guns', alternativesText: 'Available on the other ranges, including options for visitors under 20 who cannot use firearms under Thai law.',
@@ -27,7 +27,7 @@ const copy = {
   th: {
     skip: 'ข้ามไปยังเนื้อหา', menu: 'เมนู', close: 'ปิด', prototype: 'ต้นแบบไม่เป็นทางการ · ไม่มีการส่งการจองจริง',
     pricesCta: 'ดูราคา', bookCta: 'จอง / สอบถาม', whatsapp: 'ติดต่อทาง WhatsApp', call: 'โทรหาเรา', directions: 'เปิดเส้นทาง',
-    homeTitle: 'สัมผัสประสบการณ์ยิงปืนที่ภูเก็ตอย่างปลอดภัยและชัดเจน',
+    homeTitle: 'สนามยิงปืนมาตรฐาน ดูแลโดยผู้เชี่ยวชาญ',
     homeIntro: 'เยี่ยมชมสนามที่สร้างขึ้นโดยเฉพาะในฉลอง พร้อมเจ้าหน้าที่ความปลอดภัยที่มีประสบการณ์ เลือกอาวุธปืน ยิงธนู หน้าไม้ และปืนบีบี',
     experiences: 'เลือกประสบการณ์ของคุณ', firearms: 'ปืนพก ปืนยาว และปืนลูกซอง', firearmsText: 'สนามหลักระยะ 25 เมตรมี 12 ช่องยิง และมีอาวุธปืนมากกว่า 30 กระบอกให้ใช้ภายใต้การดูแลของเจ้าหน้าที่',
     alternatives: 'ยิงธนู หน้าไม้ และปืนบีบี', alternativesText: 'มีให้บริการในสนามอื่น ๆ รวมถึงตัวเลือกสำหรับผู้ที่อายุต่ำกว่า 20 ปีซึ่งกฎหมายไทยห้ามใช้อาวุธปืน',
