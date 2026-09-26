@@ -48,13 +48,13 @@ function layout(lang, page, title, description, content) {
   <a class="skip" href="#main">${c.skip}</a>
   <div class="prototype-bar">${c.prototype}</div>
   <header class="site-header">
-    <a class="brand" href="${url(lang)}" aria-label="Phuket Shooters ${value(business.descriptor,lang)}"><img class="brand__logo" src="${asset('images/logo-full.jpg')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></a>
+    <a class="brand" href="${url(lang)}" aria-label="Phuket Shooters ${value(business.descriptor,lang)}"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><i>${c.menu}</i></button>
     <nav class="site-nav" id="site-nav" aria-label="${c.menu}">${navHtml}<div class="nav-more"><button type="button" aria-expanded="false">${lang === 'en' ? 'More' : 'เพิ่มเติม'}<span aria-hidden="true">⌄</span></button><div>${moreHtml}</div></div></nav>
     ${languageMenu(lang, route, c)}
   </header>
   <main id="main">${content}</main>
-  <footer class="site-footer"><div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-full.jpg')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div><p>${c.sourceNote}</p></div><div><h2>${c.footerExplore}</h2>${nav.slice(0,5).map(x=>`<a href="${url(lang,x[1])}">${value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters prototype</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
+  <footer class="site-footer"><div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div><p>${c.sourceNote}</p></div><div><h2>${c.footerExplore}</h2>${nav.slice(0,5).map(x=>`<a href="${url(lang,x[1])}">${value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters prototype</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
   <script src="${asset('js/site.js')}" defer></script>
 </body></html>`;
 }
