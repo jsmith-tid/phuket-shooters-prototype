@@ -1,0 +1,5 @@
+const fs=require('node:fs'); const path=require('node:path'); const root=path.resolve(__dirname,'../dist');
+if(!fs.existsSync(root)) require('./build');
+const html=[]; function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,entry.name);entry.isDirectory()?walk(p):entry.name.endsWith('.html')&&html.push(p);}} walk(root);
+const failures=[]; for(const file of html){const source=fs.readFileSync(file,'utf8');if(!source.includes('noindex, nofollow')) failures.push(`${file}: missing noindex`);if(!source.includes('<html lang=')) failures.push(`${file}: missing lang`);for(const match of source.matchAll(/(?:src|href)="([^"#]+)"/g)){const ref=match[1];if(/^(https?:|mailto:|tel:)/.test(ref))continue;const local=path.join(root,ref.replace(/^\//,''));const candidate=path.extname(local)?local:path.join(local,'index.html');if(!fs.existsSync(candidate))failures.push(`${file}: broken ${ref}`);}}
+if(failures.length){console.error(failures.join('\n'));process.exit(1);} console.log(`Checked ${html.length} pages: noindex, language and local links OK.`);

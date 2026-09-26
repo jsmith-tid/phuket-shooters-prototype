@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /
+
+# Prototype only. Remove this block only as part of an approved production launch.
