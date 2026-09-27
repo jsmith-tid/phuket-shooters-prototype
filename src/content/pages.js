@@ -5,7 +5,7 @@ const copy = {
     skip: 'Skip to content', menu: 'Menu', close: 'Close', prototype: 'Unofficial prototype · No bookings are submitted',
     pricesCta: 'See prices', bookCta: 'Book / enquire', whatsapp: 'WhatsApp us', call: 'Call us', directions: 'Open directions',
     homeTitle: 'Professional Range. Expert Supervision.',
-    homeIntro: 'First-time visitors and experienced shooters are welcome at our purpose-built range, with trained safety staff on hand throughout. Choose from firearms, archery, crossbows and B.B. guns.',
+    homeIntro: 'Everyone from beginners to experienced shooters are welcome at our purpose-built range, with trained safety staff on hand throughout. Choose from firearms, archery, crossbows and B.B. guns.',
     experiences: 'Choose your experience', firearms: 'Pistols, rifles & shotguns', firearmsText: 'The main 25m range has 12 shooting bays and more than 30 firearms available under staff supervision.',
     alternatives: 'Archery, crossbows & B.B. guns', alternativesText: 'Available on the other ranges, including options for visitors under 20 who cannot use firearms under Thai law.',
     course: 'IDPA course', courseText: 'A structured three-day introduction to safe pistol handling and competition shooting.',
