@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { business, nav, prices, packages, visitImages, staff, rules } = require('../src/content/site');
+const { business, nav, prices, packages, visitImages, affiliations, staff, rules } = require('../src/content/site');
 const { copy, schedule } = require('../src/content/pages');
 
 const root = path.resolve(__dirname, '..');
@@ -30,6 +30,11 @@ function languageMenu(lang, route, c) {
   </div>`;
 }
 
+function affiliationsFooter(lang) {
+  const heading = lang === 'en' ? 'Our affiliations' : 'องค์กรพันธมิตร';
+  return `<section class="footer-affiliations" aria-labelledby="footer-affiliations-title"><h2 id="footer-affiliations-title">${heading}</h2><ul>${affiliations.map(item => `<li><img src="${asset(`images/affiliations/${item.file}`)}" loading="lazy" alt="${esc(item.name)}"></li>`).join('')}</ul></section>`;
+}
+
 function layout(lang, page, title, description, content) {
   const c = copy[lang];
   const route = nav.find(item => item[0] === page)?.[1] || '';
@@ -54,7 +59,7 @@ function layout(lang, page, title, description, content) {
     ${languageMenu(lang, route, c)}
   </header>
   <main id="main">${content}</main>
-  <footer class="site-footer"><div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div><p>${c.sourceNote}</p></div><div><h2>${c.footerExplore}</h2>${nav.map(x=>`<a href="${url(lang,x[1])}">${x[0] === 'team' && lang === 'en' ? 'The Team' : value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters prototype</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
+  <footer class="site-footer">${affiliationsFooter(lang)}<div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div><p>${c.sourceNote}</p></div><div><h2>${c.footerExplore}</h2>${nav.map(x=>`<a href="${url(lang,x[1])}">${x[0] === 'team' && lang === 'en' ? 'The Team' : value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters prototype</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
   <script src="${asset('js/site.js')}" defer></script>
 </body></html>`;
 }
