@@ -1,7 +1,7 @@
 # Phuket Shooters Website Prototype — Codex Build Brief
 
 ## 1. Objective
-
+ 
 Create a working prototype replacement for the current Phuket Shooters Wix website.
 
 The prototype is intended for internal review and later demonstration to the business investor and owner. It is **not** yet a production migration. The live Wix site must remain untouched.
