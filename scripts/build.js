@@ -12,8 +12,8 @@ const asset = file => `${base}/assets/${file}`;
 const money = n => new Intl.NumberFormat('en-US').format(n);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function button(href, label, kind = 'primary', event = '') {
-  return `<a class="button button--${kind}" href="${href}"${event ? ` data-event="${event}"` : ''}>${label}<span aria-hidden="true">→</span></a>`;
+function button(href, label, kind = 'primary', event = '', external = false) {
+  return `<a class="button button--${kind}" href="${href}"${event ? ` data-event="${event}"` : ''}${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}<span aria-hidden="true">→</span></a>`;
 }
 
 function languageMenu(lang, route, c) {
@@ -113,7 +113,7 @@ function rulesPage(lang) {
 
 function findPage(lang) {
  const c=copy[lang];
- return `${pageHeader('Chalong · Phuket',c.findTitle,c.findIntro,button(business.map,c.directions,'primary','maps_click'))}<section class="location-map" aria-label="${lang==='en'?'Map showing Phuket Shooters Shooting Range':'แผนที่แสดงที่ตั้ง Phuket Shooters Shooting Range'}"><iframe src="${business.mapEmbed}" title="${lang==='en'?'Google Map showing Phuket Shooters Shooting Range':'Google Map แสดงที่ตั้ง Phuket Shooters Shooting Range'}" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="location-map__bar"><div><p class="eyebrow">${lang==='en'?'Your destination':'จุดหมายของคุณ'}</p><strong>Phuket Shooters Shooting Range</strong><span>${value(business.address,lang)}</span></div>${button(business.map,c.directions,'light','maps_click')}</div></section><section class="section wrap contact-grid"><article><span>01</span><h2>${c.address}</h2><p>${value(business.address,lang)}</p></article><article><span>02</span><h2>${c.hours}</h2><p>${value(business.hours,lang)}</p><p>${c.noBookingText}</p></article><article><span>03</span><h2>${c.contact}</h2><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a><a href="${business.whatsapp}" data-event="whatsapp_click">WhatsApp</a></article><article><span>04</span><h2>${c.nearby}</h2><p>${c.landmark}</p></article></section>`;
+ return `${pageHeader('Chalong · Phuket',c.findTitle,c.findIntro,button(business.map,c.directions,'primary','maps_click',true))}<section class="location-map" aria-label="${lang==='en'?'Map showing Phuket Shooters Shooting Range':'แผนที่แสดงที่ตั้ง Phuket Shooters Shooting Range'}"><iframe src="${business.mapEmbed}" title="${lang==='en'?'Google Map showing Phuket Shooters Shooting Range':'Google Map แสดงที่ตั้ง Phuket Shooters Shooting Range'}" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="location-map__bar"><div><p class="eyebrow">${lang==='en'?'Your destination':'จุดหมายของคุณ'}</p><strong>Phuket Shooters Shooting Range</strong><span>${value(business.address,lang)}</span></div>${button(business.map,c.directions,'light','maps_click',true)}</div></section><section class="section wrap contact-grid"><article><span>01</span><h2>${c.address}</h2><p>${value(business.address,lang)}</p></article><article><span>02</span><h2>${c.hours}</h2><p>${value(business.hours,lang)}</p><p>${c.noBookingText}</p></article><article><span>03</span><h2>${c.contact}</h2><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a><a href="${business.whatsapp}" data-event="whatsapp_click">WhatsApp</a></article><article><span>04</span><h2>${c.nearby}</h2><p>${c.landmark}</p></article></section>`;
 }
 
 function galleryPage(lang) {
