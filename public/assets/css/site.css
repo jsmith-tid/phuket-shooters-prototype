@@ -35,3 +35,5 @@
 @media(max-width:700px){.visit-layout,.course-video-layout{grid-template-columns:minmax(0,1fr)}.visit-layout{gap:2rem}.visit-photo{min-height:0;aspect-ratio:4/3}.visit-photo>img{aspect-ratio:4/3}.course-video-layout{gap:1.5rem}.course-video-frame{min-height:0;padding:.75rem}.course-video-frame video{width:auto;max-width:100%;height:auto;max-height:70vh}}
 .course-video-frame video{width:min(100%,385px);height:auto;max-height:none;aspect-ratio:480/848}
 @media(max-width:700px){.course-video-frame video{width:min(100%,480px)}}
+.photo-strip{grid-template-columns:minmax(0,1.8fr) repeat(2,minmax(0,1fr));align-items:stretch}.photo-strip img,.photo-strip img:nth-child(n+2){width:100%;height:clamp(300px,31vw,390px);margin-top:0;object-fit:cover;object-position:center}.photo-strip img:first-child{object-position:right center}
+@media(max-width:700px){.photo-strip{grid-template-columns:1fr}.photo-strip img,.photo-strip img:nth-child(n+2){height:260px;margin-top:0}.photo-strip img:nth-child(n+3){display:block}}
