@@ -24,7 +24,7 @@ const business = {
 
 const nav = [
   ['home', '', t('Home', 'หน้าแรก')], ['prices', 'prices', t('Prices', 'ราคา')],
-  ['courses', 'courses', t('Courses', 'หลักสูตร')], ['book', 'book', t('Book / Enquire', 'จอง / สอบถาม')],
+  ['courses', 'courses', t('Courses', 'หลักสูตร')], ['news', 'news-events', t('News and Events', 'ข่าวและกิจกรรม')], ['book', 'book', t('Book / Enquire', 'จอง / สอบถาม')],
   ['find-us', 'find-us', t('Find Us', 'การเดินทาง')], ['team', 'meet-the-team', t('Team', 'ทีมงาน')],
   ['rules', 'range-rules', t('Range Rules', 'กฎของสนาม')], ['gallery', 'gallery', t('Gallery', 'แกลเลอรี')]
 ];

@@ -21,6 +21,7 @@ const copy = {
     rulesTitle: 'Range rules', rulesIntro: 'Phuket Shooters Association and Phuket Shooters Shooting Range must keep a record of all users for the Thailand Police, government officials and associated organisations. You are required to carefully read and acknowledge the following.', controlled: 'Controlled safety content — reproduced from the English live site.',
     findTitle: 'How to find us', findIntro: 'Practical details for your visit to the range in Chalong.', address: 'Address', hours: 'Opening hours', contact: 'Contact', nearby: 'Nearby landmark', landmark: "We're near the Phuket Dolphin Show, the Crocodile Show Phuket and Mini Zoo, Lion Land, the Cobra Show and Jurafish.", mapNote: 'Use the interactive map above or open directions in Google Maps.',
     galleryTitle: 'Gallery', galleryIntro: '',
+    newsTitle: 'News and Events', newsIntro: 'News, events and range updates will appear here.', latestUpdate: 'Latest update', viewAllNews: 'View all news and events', readMore: 'Read more', backToNews: 'Back to News and Events', exampleContent: 'Example content — awaiting approved copy',
     footerExplore: 'Explore', footerVisit: 'Visit',
     reviewsLabel: 'Google Reviews', reviewsCount: 'reviews', reviewsLink: 'Read reviews on Google',
     comingSoon: 'Coming soon', language: 'Language', english: 'English', thai: 'ไทย', chinese: 'Chinese', arabic: 'Arabic', russian: 'Russian'
@@ -44,6 +45,7 @@ const copy = {
     rulesTitle: 'กฎของสนาม', rulesIntro: 'Phuket Shooters Association และ Phuket Shooters Shooting Range มีหน้าที่เก็บบันทึกผู้ใช้สนามทุกคนสำหรับตำรวจไทย เจ้าหน้าที่รัฐ และองค์กรที่เกี่ยวข้อง ท่านต้องอ่านและรับทราบข้อต่อไปนี้อย่างรอบคอบ', controlled: 'เนื้อหาความปลอดภัยที่ควบคุม — แปลจากเว็บไซต์ภาษาอังกฤษ',
     findTitle: 'วิธีเดินทาง', findIntro: 'รายละเอียดสำหรับการเดินทางมายังสนามในฉลอง', address: 'ที่อยู่', hours: 'เวลาเปิดทำการ', contact: 'ติดต่อ', nearby: 'สถานที่ใกล้เคียง', landmark: 'เราอยู่ใกล้ Phuket Dolphin Show, Crocodile Show Phuket and Mini Zoo, Lion Land, Cobra Show และ Jurafish', mapNote: 'ใช้แผนที่แบบโต้ตอบด้านบน หรือเปิดเส้นทางใน Google Maps',
     galleryTitle: 'แกลเลอรี', galleryIntro: '',
+    newsTitle: 'ข่าวและกิจกรรม', newsIntro: 'ข่าว กิจกรรม และประกาศจากสนามจะแสดงที่นี่', latestUpdate: 'อัปเดตล่าสุด', viewAllNews: 'ดูข่าวและกิจกรรมทั้งหมด', readMore: 'อ่านเพิ่มเติม', backToNews: 'กลับไปที่ข่าวและกิจกรรม', exampleContent: 'เนื้อหาตัวอย่าง — รอเนื้อหาที่ได้รับอนุมัติ',
     footerExplore: 'สำรวจ', footerVisit: 'เยี่ยมชม',
     reviewsLabel: 'รีวิวบน Google', reviewsCount: 'รีวิว', reviewsLink: 'อ่านรีวิวบน Google',
     comingSoon: 'เร็ว ๆ นี้', language: 'ภาษา', english: 'English', thai: 'ไทย', chinese: 'จีน', arabic: 'อารบิก', russian: 'รัสเซีย'

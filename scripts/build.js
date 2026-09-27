@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { business, nav, prices, packages, visitImages, affiliations, staff, rules } = require('../src/content/site');
 const { copy, schedule } = require('../src/content/pages');
+const { newsItems } = require('../src/content/news');
 
 const root = path.resolve(__dirname, '..');
 const out = path.join(root, 'dist');
@@ -11,6 +12,9 @@ const url = (lang, route = '') => `${base}/${lang === 'th' ? 'th/' : ''}${route 
 const asset = file => `${base}/assets/${file}`;
 const money = n => new Intl.NumberFormat('en-US').format(n);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const orderedNewsItems = () => [...newsItems].sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+const formatDate = (date, lang) => date ? new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : 'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${date}T00:00:00Z`)) : '';
+const newsUrl = (lang, item) => url(lang, `news-events/${item.slug}`);
 
 function button(href, label, kind = 'primary', event = '', external = false) {
   return `<a class="button button--${kind}" href="${href}"${event ? ` data-event="${event}"` : ''}${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}<span aria-hidden="true">→</span></a>`;
@@ -35,17 +39,19 @@ function affiliationsFooter(lang) {
   return `<section class="footer-affiliations" aria-labelledby="footer-affiliations-title"><h2 id="footer-affiliations-title">${heading}</h2><ul>${affiliations.map(item => `<li><img src="${asset(`images/affiliations/${item.file}`)}" loading="lazy" alt="${esc(item.name)}"></li>`).join('')}</ul></section>`;
 }
 
-function layout(lang, page, title, description, content) {
+function layout(lang, page, title, description, content, routeOverride = null, options = {}) {
   const c = copy[lang];
-  const route = nav.find(item => item[0] === page)?.[1] || '';
-  const navHtml = nav.slice(0, 5).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
-  const moreHtml = nav.slice(5).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
+  const route = routeOverride ?? nav.find(item => item[0] === page)?.[1] ?? '';
+  const navHtml = nav.slice(0, 6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
+  const moreHtml = nav.slice(6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
+  const socialMeta = options.ogType ? `<meta property="og:type" content="${esc(options.ogType)}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">${options.publishedTime ? `<meta property="article:published_time" content="${esc(options.publishedTime)}">` : ''}` : '';
   return `<!doctype html>
 <html lang="${lang}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="googlebot" content="noindex, nofollow, noarchive">
   <title>${esc(title)} | Phuket Shooters</title><meta name="description" content="${esc(description)}">
+  ${socialMeta}
   <link rel="alternate" hreflang="en" href="${url('en', route)}"><link rel="alternate" hreflang="th" href="${url('th', route)}">
   <link rel="icon" href="${asset('images/logo.jpg')}"><link rel="stylesheet" href="${asset('css/site.css')}">
 </head>
@@ -74,6 +80,19 @@ function cta(lang, heading, text) {
   return `<section class="cta"><div><p class="eyebrow">${value(business.hours,lang)}</p><h2>${heading}</h2><p>${text}</p></div><div class="actions">${button(url(lang,'book'),c.bookCta,'light','begin_booking')}${button(business.whatsapp,c.whatsapp,'ghost','whatsapp_click')}</div></section>`;
 }
 
+function newsCard(lang, item, featured = false) {
+  const c = copy[lang];
+  const date = formatDate(item.date,lang);
+  return `<article class="news-card${featured ? ' news-card--featured' : ''}"><a class="news-card__image" href="${newsUrl(lang,item)}"><img src="${asset(`images/${item.heroImage}`)}" loading="lazy" alt="${esc(value(item.heroAlt,lang))}"></a><div class="news-card__body"><p class="news-card__meta"><span>${esc(value(item.category,lang))}</span>${date ? `<time datetime="${item.date}">${date}</time>` : ''}</p>${item.isPlaceholder ? `<p class="news-placeholder">${c.exampleContent}</p>` : ''}<h3><a href="${newsUrl(lang,item)}">${esc(value(item.title,lang))}</a></h3><p>${esc(value(item.summary,lang))}</p><a class="news-card__link" href="${newsUrl(lang,item)}">${c.readMore} →</a></div></article>`;
+}
+
+function homeNews(lang) {
+  const c = copy[lang];
+  const latest = orderedNewsItems()[0];
+  if(!latest) return '';
+  return `<section class="section section--soft home-news"><div class="wrap"><div class="split-heading"><div><p class="eyebrow">${c.latestUpdate}</p><h2>${c.newsTitle}</h2></div><a class="news-all-link" href="${url(lang,'news-events')}">${c.viewAllNews} →</a></div>${newsCard(lang,latest,true)}</div></section>`;
+}
+
 function home(lang) {
   const c = copy[lang];
   const visitPool = visitImages.map(image => ({ src: asset(`images/${image.file}`), alt: value(image.alt,lang) }));
@@ -81,6 +100,7 @@ function home(lang) {
   <aside class="reviews-bar" aria-label="${c.reviewsLabel}"><div class="reviews-bar__inner"><div class="reviews-bar__source"><span class="google-g" aria-hidden="true">G</span><strong>${c.reviewsLabel}</strong></div><div class="reviews-bar__rating"><b>${business.reviews.rating}</b><span class="stars" aria-label="${business.reviews.rating} out of 5">★★★★★</span><span>${business.reviews.count} ${c.reviewsCount}</span></div><a href="${business.reviews.url}" data-event="reviews_click" rel="noopener">${c.reviewsLink}<span aria-hidden="true">↗</span></a></div></aside>
   <section class="section wrap"><div class="section-heading"><p class="eyebrow">${c.experiences}</p><h2>${lang==='en'?'Ways to enjoy':'หลายวิธีในการเข้าร่วม'}</h2></div><div class="experience-grid"><article class="feature feature--image"><img src="${asset('images/hero-shotgun.jpg')}" loading="lazy" alt="${lang==='en'?'Customer using a shotgun under supervision':'ลูกค้าใช้ปืนลูกซองภายใต้การดูแล'}"><div><span>01</span><h3>${c.firearms}</h3><p>${c.firearmsText}</p>${button(url(lang,'prices'),c.pricesCta,'text','view_prices')}</div></article><article class="feature"><span>02</span><h3>${c.alternatives}</h3><p>${c.alternativesText}</p>${button(url(lang,'prices'),c.pricesCta,'text','view_prices')}</article><article class="feature feature--red"><span>03</span><h3>${c.course}</h3><p>${c.courseText}</p>${button(url(lang,'courses'),lang==='en'?'Explore the course':'ดูหลักสูตร','text','select_course')}</article></div></section>
   <section class="section section--ink visit-section"><div class="wrap visit-layout"><div><div class="section-heading"><p class="eyebrow">${c.practical}</p><h2>${lang==='en'?'Everything you need to arrive prepared':'ข้อมูลที่คุณต้องรู้ก่อนมา'}</h2></div><div class="info-grid"><article><i>01</i><h3>${c.safety}</h3><p>${c.safetyText}</p></article><article><i>02</i><h3>${c.facility}</h3><p>${c.facilityText}</p></article><article><i>03</i><h3>${c.noBooking}</h3><p>${c.noBookingText}</p></article><article><i>04</i><h3>${c.identification}</h3><p>${c.identificationText}</p><a class="info-link" href="${url(lang,'range-rules')}">${c.rulesTitle} →</a></article></div></div><figure class="visit-photo"><img data-visit-image data-image-pool="${esc(JSON.stringify(visitPool))}" width="1200" height="900" loading="lazy" alt=""><noscript><img src="${visitPool[0].src}" width="1200" height="900" loading="lazy" alt="${esc(visitPool[0].alt)}"></noscript></figure></div></section>
+  ${homeNews(lang)}
   <section class="section wrap"><div class="split-heading"><div><p class="eyebrow">${c.selectedPhotos}</p><h2>${lang==='en'?'A look at the experience':'บรรยากาศของประสบการณ์'}</h2></div>${button(url(lang,'gallery'),c.viewGallery,'outline')}</div><div class="photo-strip"><img src="${asset('images/hero-customers.jpg')}" loading="lazy" alt="${lang==='en'?'Visitors holding their shooting targets':'ผู้มาเยือนถือเป้ายิง'}"><img src="${asset('images/photo15.jpeg')}" loading="lazy" alt="${lang==='en'?'Café and visitor seating area at Phuket Shooters':'คาเฟ่และพื้นที่นั่งพักสำหรับผู้มาเยือนที่ Phuket Shooters'}"><img src="${asset('images/gallery-02.jpg')}" loading="lazy" alt="${lang==='en'?'Instructor supervising a visitor using a rifle':'ผู้สอนดูแลผู้เยี่ยมชมขณะใช้ปืนยาว'}"></div></section>
   <section class="location-band"><div><p class="eyebrow">${c.location}</p><h2>${value(business.address,lang)}</h2><p>${value(business.hours,lang)} · ${business.phoneDisplay}</p></div>${button(business.map,c.directions,'light','maps_click')}</section>
   ${cta(lang,lang==='en'?'Ready to plan your visit?':'พร้อมวางแผนการเยี่ยมชมแล้วหรือยัง?',lang==='en'?'Walk in during opening hours, or contact the range if you need a specific time.':'เข้ามาได้ในเวลาเปิดทำการ หรือติดต่อหากต้องการเวลาเฉพาะ')}`;
@@ -121,9 +141,21 @@ function galleryPage(lang) {
  return `${pageHeader('Phuket Shooters',c.galleryTitle,c.galleryIntro)}<section class="section wrap"><div class="gallery-grid">${alts.map((alt,i)=>`<figure><img src="${asset(`images/gallery-${String(i+1).padStart(2,'0')}.jpg`)}" loading="lazy" alt="${alt}"><figcaption>${String(i+1).padStart(2,'0')} / Phuket Shooters</figcaption></figure>`).join('')}</div></section>${cta(lang,lang==='en'?'See it for yourself':'มาสัมผัสด้วยตัวคุณเอง',c.noBookingText)}`;
 }
 
-const renderers={home,prices:pricesPage,book:bookPage,courses:coursesPage,team:teamPage,rules:rulesPage,'find-us':findPage,gallery:galleryPage};
+function newsPage(lang) {
+  const c=copy[lang];
+  return `${pageHeader('Phuket Shooters',c.newsTitle,c.newsIntro)}<section class="section wrap"><div class="news-list">${orderedNewsItems().map(item=>newsCard(lang,item)).join('')}</div></section>`;
+}
+
+function newsArticlePage(lang,item) {
+  const c=copy[lang];
+  const date=formatDate(item.date,lang);
+  const gallery=item.gallery||[];
+  return `<article class="news-article"><header class="news-article__header wrap"><a class="news-back" href="${url(lang,'news-events')}">← ${c.backToNews}</a><p class="eyebrow">${esc(value(item.category,lang))}</p>${item.isPlaceholder?`<p class="news-placeholder">${c.exampleContent}</p>`:''}<h1>${esc(value(item.title,lang))}</h1>${date?`<time datetime="${item.date}">${date}</time>`:''}<p class="lede">${esc(value(item.summary,lang))}</p></header><figure class="news-article__hero wrap"><img src="${asset(`images/${item.heroImage}`)}" alt="${esc(value(item.heroAlt,lang))}"></figure><div class="news-article__body wrap narrow">${value(item.body,lang).map(paragraph=>`<p>${esc(paragraph)}</p>`).join('')}${item.eventDate?`<p><strong>${lang==='en'?'Event date':'วันที่จัดกิจกรรม'}:</strong> <time datetime="${item.eventDate}">${formatDate(item.eventDate,lang)}</time></p>`:''}${item.cta?button(value(item.cta.url,lang),value(item.cta.label,lang),'primary','news_cta'):''}</div>${gallery.length?`<div class="news-article__gallery wrap">${gallery.map(image=>`<img src="${asset(`images/${image.file}`)}" loading="lazy" alt="${esc(value(image.alt,lang))}">`).join('')}</div>`:''}</article>`;
+}
+
+const renderers={home,prices:pricesPage,book:bookPage,courses:coursesPage,news:newsPage,team:teamPage,rules:rulesPage,'find-us':findPage,gallery:galleryPage};
 const metadata={
- home:['Shooting range in Phuket','A clearer guide to Phuket Shooters range, activities, prices and visitor information.'], prices:['Range prices','Current individual activity and package prices at Phuket Shooters.'], book:['Booking and enquiries','Prototype booking and enquiry flow for Phuket Shooters.'], courses:['IDPA course','Three-day IDPA course information and timetable at Phuket Shooters.'], team:['Meet the team','Meet the instructors, safety officers and customer service team at Phuket Shooters.'], rules:['Range rules','Controlled range safety and visitor rules for Phuket Shooters.'], 'find-us':['Find us','Address, opening hours and contact details for Phuket Shooters in Chalong.'], gallery:['Gallery','A curated gallery of training and visitor experiences at Phuket Shooters.']
+ home:['Shooting range in Phuket','A clearer guide to Phuket Shooters range, activities, prices and visitor information.'], prices:['Range prices','Current individual activity and package prices at Phuket Shooters.'], book:['Booking and enquiries','Prototype booking and enquiry flow for Phuket Shooters.'], courses:['IDPA course','Three-day IDPA course information and timetable at Phuket Shooters.'], news:['News and Events','News, events and announcements from Phuket Shooters.'], team:['Meet the team','Meet the instructors, safety officers and customer service team at Phuket Shooters.'], rules:['Range rules','Controlled range safety and visitor rules for Phuket Shooters.'], 'find-us':['Find us','Address, opening hours and contact details for Phuket Shooters in Chalong.'], gallery:['Gallery','A curated gallery of training and visitor experiences at Phuket Shooters.']
 };
 
 fs.rmSync(out,{recursive:true,force:true}); fs.mkdirSync(out,{recursive:true}); fs.cpSync(path.join(root,'public'),out,{recursive:true});
@@ -132,4 +164,8 @@ for(const lang of ['en','th']) for(const [page,renderer] of Object.entries(rende
   const [title,desc]=metadata[page]; const localTitle=lang==='th'?copy.th[page==='home'?'homeTitle':page==='find-us'?'findTitle':`${page}Title`]||title:title;
   fs.writeFileSync(target,layout(lang,page,localTitle,desc,renderer(lang)));
 }
-console.log(`Built ${Object.keys(renderers).length*2} pages in ${path.relative(root,out)} with base "${base||'/'}"`);
+for(const lang of ['en','th']) for(const item of newsItems){
+  const route=`news-events/${item.slug}`; const target=path.join(out,lang==='th'?'th':'',route,'index.html'); fs.mkdirSync(path.dirname(target),{recursive:true});
+  fs.writeFileSync(target,layout(lang,'news',value(item.title,lang),value(item.metaDescription,lang),newsArticlePage(lang,item),route,{ogType:'article',publishedTime:item.date}));
+}
+console.log(`Built ${Object.keys(renderers).length*2+newsItems.length*2} pages in ${path.relative(root,out)} with base "${base||'/'}"`);

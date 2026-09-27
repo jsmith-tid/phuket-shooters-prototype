@@ -25,6 +25,7 @@ Generated files are written to `dist/` and are not committed.
 
 - `src/content/site.js` — business details, navigation, prices, packages, staff and controlled range rules
 - `src/content/pages.js` — English/Thai interface copy and the IDPA timetable
+- `src/content/news.js` — data-driven News and Events articles, metadata and optional galleries/CTAs
 - `scripts/build.js` — dependency-free static generator and shared page templates
 - `public/assets/` — local CSS, JavaScript and images migrated from the live site
 - `public/robots.txt` — prototype crawler block
@@ -74,6 +75,12 @@ The Google rating, review count, verification date and Business Profile link are
 5. Translate all controlled content from canonical English and obtain business approval.
 
 Chinese, Arabic and Russian are deliberately shown as “Coming soon” in this prototype.
+
+### Add a News and Events item
+
+Add an entry to `newsItems` in `src/content/news.js`. Each item supports a slug, title, publication date, category, summary, paragraph-based body, hero image, optional image gallery, optional event date, optional CTA and meta description. Listing, homepage-latest and individual article pages are generated automatically in both languages; no page template changes are required.
+
+Only add factual event copy and translations after approval. Keep `isPlaceholder: true` for examples or incomplete material and remove it when the item is approved for publication.
 
 ## Images
 
