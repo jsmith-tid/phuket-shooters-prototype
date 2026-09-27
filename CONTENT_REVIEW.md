@@ -48,9 +48,11 @@ Shared contact details extracted from the English pages:
 - All displayed photography is from the existing Phuket Shooters site; no stock or AI-generated photography was introduced.
 - Hero and gallery images were resized through Wix’s image service at extraction time and stored locally. Typical gallery files are approximately 120–250 KB; staff portraits are approximately 30–65 KB.
 - The live homepage exposes a 34-image carousel and the gallery exposes roughly 112 image entries. The prototype deliberately uses three prominent homepage images and twelve gallery images.
+- The homepage Plan your visit section randomly selects one image per page view from a five-image, bilingual-alt-text pool of approved visitor, supervision and facility photography. Only the selected image is requested.
 - Some live gallery source alt text repeats the generic phrase “Training to fire weapons at Phuket Shooters, Thailand”. Prototype alt text is contextual but should be reviewed against the people/actions actually shown.
 - Confirm consent for identifiable customers and staff, especially for production reuse outside Wix.
 - Source media is photographed at mixed quality/aspect ratios. A later production shoot would improve consistent wide hero, facility, café/viewing area, exterior/entrance, parking and non-firearm activity coverage.
+- The Courses page uses the supplied 41-second portrait video as a general competition-style shooting exercise. It is an existing H.264/AAC MP4, presented without autoplay and with a poster extracted from the footage; the copy does not claim that the person shown is completing the advertised IDPA course.
 
 ## Content/UX decisions made in the prototype
 

@@ -42,6 +42,14 @@ const packages = [
   [2450, 'B.B. Gun · Archery · Crossbow'], [1700, 'B.B. Gun · Archery'], [1700, 'B.B. Gun · Crossbow']
 ];
 
+const visitImages = [
+  { file: 'gallery-05.jpg', alt: t('A visitor with a range officer after a supervised shooting session', 'ผู้เยี่ยมชมกับเจ้าหน้าที่สนามหลังการยิงภายใต้การดูแล') },
+  { file: 'gallery-06.jpg', alt: t('A visitor displaying her target inside the indoor range', 'ผู้เยี่ยมชมแสดงเป้ายิงภายในสนามในร่ม') },
+  { file: 'gallery-07.jpg', alt: t('An instructor helping a visitor prepare at an indoor shooting bay', 'ผู้สอนช่วยผู้เยี่ยมชมเตรียมตัวที่ช่องยิงในร่ม') },
+  { file: 'gallery-10.jpg', alt: t('A visitor shooting under staff supervision on the indoor range', 'ผู้เยี่ยมชมยิงปืนภายใต้การดูแลของเจ้าหน้าที่ในสนามในร่ม') },
+  { file: 'gallery-12.jpg', alt: t('A range officer guiding a visitor at an indoor shooting bay', 'เจ้าหน้าที่สนามแนะนำผู้เยี่ยมชมที่ช่องยิงในร่ม') }
+];
+
 const staff = [
   ['gola','Gola',t('Managing director & instructor','กรรมการผู้จัดการและผู้สอน'),t('Gola is the managing director and an IPSC and IDPA shooting instructor with more than 20 years experience. He leads the Phuket Shooters competition team and is an operations team leader of the Department of Provincial Administration (D.O.P.A) Team.','Gola เป็นกรรมการผู้จัดการและผู้สอนยิงปืน IPSC และ IDPA ที่มีประสบการณ์มากกว่า 20 ปี เป็นผู้นำทีมแข่งขัน Phuket Shooters และหัวหน้าทีมปฏิบัติการของกรมการปกครอง (D.O.P.A)'),'Thai, English'],
   ['nan','Nan',t('Shooting range manager','ผู้จัดการสนามยิงปืน'),t('Nan is a qualified IPSC range officer and IDPA safety officer, a member of the Phuket Shooters competition team and a member of the D.O.P.A team.','Nan เป็นเจ้าหน้าที่สนาม IPSC และเจ้าหน้าที่ความปลอดภัย IDPA ที่มีคุณสมบัติ เป็นสมาชิกทีมแข่งขัน Phuket Shooters และทีม D.O.P.A'),'Thai, English'],
@@ -73,4 +81,4 @@ const rules = [
  t('If any claim arises against the Phuket Shooters Association or Phuket Shooters Shooting Range for property damage, injury or loss of life, you acknowledge that it will be dealt with under Thai law and within the jurisdiction of the Kingdom of Thailand.','หากมีการเรียกร้องใดๆ ต่อ Phuket Shooters Association หรือ Phuket Shooters Shooting Range สำหรับความเสียหายต่อทรัพย์สิน การบาดเจ็บ หรือการเสียชีวิต ท่านรับทราบว่าจะดำเนินการตามกฎหมายไทยและภายใต้เขตอำนาจของราชอาณาจักรไทย')
 ];
 
-module.exports = { t, business, nav, prices, packages, staff, rules };
+module.exports = { t, business, nav, prices, packages, visitImages, staff, rules };

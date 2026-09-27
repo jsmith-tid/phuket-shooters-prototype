@@ -79,7 +79,9 @@ Chinese, Arabic and Russian are deliberately shown as “Coming soon” in this 
 
 Images in `public/assets/images/` were downloaded from the existing Phuket Shooters Wix site with authorisation in the project brief. Wix’s image service was used to resize and compress them at extraction time. Gallery images use native lazy loading; key hero imagery is loaded eagerly.
 
-The UI uses 12 curated gallery images instead of the live gallery’s much larger set. Original Wix media IDs and extraction decisions are recorded in `CONTENT_REVIEW.md` and the Git history.
+The UI uses 12 curated gallery images instead of the live gallery’s much larger set. The homepage Plan your visit section chooses one file per page load from a five-image pool stored in shared content data, so it does not download every candidate. Original Wix media IDs and extraction decisions are recorded in `CONTENT_REVIEW.md` and the Git history.
+
+The Courses page also includes the supplied competition-exercise video as a native, non-autoplaying H.264 MP4 with controls, inline mobile playback and a poster frame extracted from the footage.
 
 ## Prototype booking form
 
