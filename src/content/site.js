@@ -51,12 +51,12 @@ const visitImages = [
 ];
 
 const affiliations = [
-  { file: 'idpa.jpg', name: 'International Defensive Pistol Association (IDPA)' },
-  { file: 'sports-authority-of-thailand.jpg', name: 'Sports Authority of Thailand' },
-  { file: 'sap.jpg', name: 'The Sport Association of Phuket' },
-  { file: 'national-sports-development-fund.png', name: 'National Sports Development Fund' },
-  { file: 'thpsa.jpg', name: 'Thailand Practical Shooting Association (THPSA)' },
-  { file: 'ipsc.png', name: 'International Practical Shooting Confederation (IPSC)' }
+  { file: 'th_idpa.jpg', name: 'International Defensive Pistol Association (IDPA)' },
+  { file: 'th_sports-authority-of-thailand.jpg', name: 'Sports Authority of Thailand' },
+  { file: 'th_sap.jpg', name: 'The Sport Association of Phuket' },
+  { file: 'th_national-sports-development-fund.jpg', name: 'National Sports Development Fund' },
+  { file: 'th_thpsa.jpg', name: 'Thailand Practical Shooting Association (THPSA)' },
+  { file: 'th_ipsc.png', name: 'International Practical Shooting Confederation (IPSC)' }
 ];
 
 const staff = [
