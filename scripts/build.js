@@ -3,12 +3,13 @@ const path = require('node:path');
 const { business, nav, prices, packages, visitImages, affiliations, staff, rules } = require('../src/content/site');
 const { copy, schedule } = require('../src/content/pages');
 const { newsItems } = require('../src/content/news');
+const { tourOperators } = require('../src/content/tourOperators');
 
 const root = path.resolve(__dirname, '..');
 const out = path.join(root, 'dist');
 const base = (process.env.BASE_PATH || '').replace(/\/$/, '');
 const value = (entry, lang) => typeof entry === 'object' && entry !== null && lang in entry ? entry[lang] : entry;
-const url = (lang, route = '') => `${base}/${lang === 'th' ? 'th/' : ''}${route ? `${route}/` : ''}`;
+const url = (lang, route = '') => `${base}/${lang === 'th' ? 'th/' : lang === 'zh' ? 'zh/' : ''}${route ? `${route}/` : ''}`;
 const asset = file => `${base}/assets/${file}`;
 const money = n => new Intl.NumberFormat('en-US').format(n);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -40,33 +41,35 @@ function affiliationsFooter(lang) {
 }
 
 function layout(lang, page, title, description, content, routeOverride = null, options = {}) {
-  const c = copy[lang];
+  const shellLang = lang === 'zh' ? 'en' : lang;
+  const c = copy[shellLang];
   const route = routeOverride ?? nav.find(item => item[0] === page)?.[1] ?? '';
-  const navHtml = nav.slice(0, 6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
-  const moreHtml = nav.slice(6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
+  const navHtml = nav.slice(0, 6).map(([id, href, label]) => `<a href="${url(shellLang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, shellLang)}</a>`).join('');
+  const moreHtml = nav.slice(6).map(([id, href, label]) => `<a href="${url(shellLang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, shellLang)}</a>`).join('');
   const socialMeta = options.ogType ? `<meta property="og:type" content="${esc(options.ogType)}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">${options.publishedTime ? `<meta property="article:published_time" content="${esc(options.publishedTime)}">` : ''}` : '';
+  const languageAlternates = `<link rel="alternate" hreflang="en" href="${url('en', route)}"><link rel="alternate" hreflang="th" href="${url('th', route)}">${page === 'tour-operators' ? `<link rel="alternate" hreflang="zh-CN" href="${url('zh', route)}">` : ''}`;
   return `<!doctype html>
-<html lang="${lang}">
+<html lang="${lang === 'zh' ? 'zh-CN' : lang}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="googlebot" content="noindex, nofollow, noarchive">
   <title>${esc(title)} | Phuket Shooters</title><meta name="description" content="${esc(description)}">
   ${socialMeta}
-  <link rel="alternate" hreflang="en" href="${url('en', route)}"><link rel="alternate" hreflang="th" href="${url('th', route)}">
+  ${languageAlternates}
   <link rel="icon" href="${asset('images/logo.jpg')}"><link rel="stylesheet" href="${asset('css/site.css')}">
 </head>
 <body class="page-${page}">
-  <a class="skip" href="#main">${c.skip}</a>
-  <div class="prototype-bar">${c.prototype}</div>
-  <header class="site-header">
-    <a class="brand" href="${url(lang)}" aria-label="Phuket Shooters ${value(business.descriptor,lang)}"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><i>${c.menu}</i></button>
+  <a class="skip" href="#main">${lang === 'zh' ? '跳至内容' : c.skip}</a>
+  <div class="prototype-bar">${lang === 'zh' ? '非官方演示版 · 不会提交预订' : c.prototype}</div>
+  <header class="site-header"${lang === 'zh' ? ' lang="en"' : ''}>
+    <a class="brand" href="${url(shellLang)}" aria-label="Phuket Shooters ${value(business.descriptor,shellLang)}"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,shellLang)}</small></span></a>
+    ${lang === 'zh' ? `<a class="operator-home-link" href="${url('en')}" lang="zh-CN">${tourOperators.pages.zh.englishHome} →</a>` : `<button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><i>${c.menu}</i></button>
     <nav class="site-nav" id="site-nav" aria-label="${c.menu}">${navHtml}<div class="nav-more"><button type="button" aria-expanded="false">${lang === 'en' ? 'More' : 'เพิ่มเติม'}<span aria-hidden="true">⌄</span></button><div>${moreHtml}</div></div></nav>
-    ${languageMenu(lang, route, c)}
+    ${languageMenu(lang, route, c)}`}
   </header>
   <main id="main">${content}</main>
-  <footer class="site-footer">${affiliationsFooter(lang)}<div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div></div><div><h2>${c.footerExplore}</h2>${nav.map(x=>`<a href="${url(lang,x[1])}">${x[0] === 'team' && lang === 'en' ? 'The Team' : value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
-  <a class="whatsapp-float" href="${business.whatsapp}" target="_blank" rel="noopener noreferrer" data-event="whatsapp_click" aria-label="${lang === 'en' ? 'Contact us with WhatsApp' : 'ติดต่อเราทาง WhatsApp'}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span class="whatsapp-float__tooltip" aria-hidden="true">${lang === 'en' ? 'Contact us with WhatsApp' : 'ติดต่อเราทาง WhatsApp'}</span></a>
+  <footer class="site-footer"${lang === 'zh' ? ' lang="en"' : ''}>${affiliationsFooter(shellLang)}<div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,shellLang)}</small></span></div></div><div><h2>${c.footerExplore}</h2>${nav.map(x=>`<a href="${url(shellLang,x[1])}">${x[0] === 'team' && shellLang === 'en' ? 'The Team' : value(x[2],shellLang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,shellLang)}<br>${value(business.address,shellLang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters</span><a href="${url(shellLang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],shellLang)}</a></div></footer>
+  <a class="whatsapp-float" href="${business.whatsapp}" target="_blank" rel="noopener noreferrer" data-event="whatsapp_click" aria-label="${lang === 'zh' ? '通过 WhatsApp 联系我们' : lang === 'en' ? 'Contact us with WhatsApp' : 'ติดต่อเราทาง WhatsApp'}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span class="whatsapp-float__tooltip" aria-hidden="true">${lang === 'zh' ? '通过 WhatsApp 联系我们' : lang === 'en' ? 'Contact us with WhatsApp' : 'ติดต่อเราทาง WhatsApp'}</span></a>
   <script src="${asset('js/site.js')}" defer></script>
 </body></html>`;
 }
@@ -93,11 +96,21 @@ function homeNews(lang) {
   return `<section class="section section--soft home-news"><div class="wrap"><div class="split-heading"><div><p class="eyebrow">${c.latestUpdate}</p><h2>${c.newsTitle}</h2></div><a class="news-all-link" href="${url(lang,'news-events')}">${c.viewAllNews} →</a></div>${newsCard(lang,latest,true)}</div></section>`;
 }
 
+function tourOperatorStrip(lang) {
+  return `<aside class="tour-operator-strip" id="tour-operators" aria-label="${lang === 'en' ? 'Tour operators' : 'สำหรับบริษัททัวร์'}"><div class="tour-operator-strip__inner"><img src="${asset('images/coach-illustration.svg')}" width="112" height="72" alt="${lang === 'en' ? 'Illustration of a coach' : 'ภาพประกอบรถโค้ช'}"><div class="tour-operator-strip__links">${tourOperators.links.map(link => `<a href="${url(link.lang,tourOperators.route)}" lang="${link.lang === 'zh' ? 'zh-CN' : link.lang}" hreflang="${link.lang === 'zh' ? 'zh-CN' : link.lang}" data-event="tour_operator_link_click" data-language="${link.lang}">${link.label}<span aria-hidden="true">→</span></a>`).join('')}</div></div></aside>`;
+}
+
+function tourOperatorPage(lang) {
+  const c = tourOperators.pages[lang];
+  return `${pageHeader('Phuket Shooters',esc(c.title),esc(c.intro))}<section class="section wrap tour-operator-page"><div class="tour-operator-page__card"><p class="eyebrow">${esc(c.notice)}</p><p>${esc(c.body)}</p>${button(business.whatsapp,esc(c.contact),'primary','tour_operator_enquiry',true)}</div><nav class="tour-operator-page__languages" aria-label="${lang === 'zh' ? '选择语言' : lang === 'th' ? 'เลือกภาษา' : 'Choose a language'}">${tourOperators.links.map(link => `<a href="${url(link.lang,tourOperators.route)}" lang="${link.lang === 'zh' ? 'zh-CN' : link.lang}" hreflang="${link.lang === 'zh' ? 'zh-CN' : link.lang}"${link.lang === lang ? ' aria-current="page"' : ''}>${link.label}</a>`).join('')}</nav></section>`;
+}
+
 function home(lang) {
   const c = copy[lang];
   const visitPool = visitImages.map(image => ({ src: asset(`images/${image.file}`), alt: value(image.alt,lang) }));
   return `<section class="home-hero"><img src="${asset('images/hero-instructors.jpg')}" alt="${lang==='en'?'Instructors supervising customers on the indoor shooting range':'ผู้สอนดูแลลูกค้าในสนามยิงปืนในร่ม'}" fetchpriority="high"><div class="home-hero__shade"></div><div class="home-hero__content"><p class="eyebrow">Chalong · Phuket</p><h1>${c.homeTitle}</h1><p>${c.homeIntro}</p><div class="actions">${button(url(lang,'prices'),c.pricesCta,'primary','view_prices')}${button(url(lang,'book'),c.bookCta,'light','begin_booking')}</div></div><div class="hero-facts"><span><b>09:00–18:00</b>${lang==='en'?'Daily':'ทุกวัน'}</span><span><b>25m</b>${lang==='en'?'Main range':'สนามหลัก'}</span><span><b>12</b>${lang==='en'?'Shooting bays':'ช่องยิง'}</span></div></section>
   <aside class="reviews-bar" aria-label="${c.reviewsLabel}"><div class="reviews-bar__inner"><div class="reviews-bar__source"><span class="google-g" aria-hidden="true">G</span><strong>${c.reviewsLabel}</strong></div><div class="reviews-bar__rating"><b>${business.reviews.rating}</b><span class="stars" aria-label="${business.reviews.rating} out of 5">★★★★★</span><span>${business.reviews.count} ${c.reviewsCount}</span></div><a href="${business.reviews.url}" data-event="reviews_click" rel="noopener">${c.reviewsLink}<span aria-hidden="true">↗</span></a></div></aside>
+  ${tourOperatorStrip(lang)}
   <section class="section wrap"><div class="section-heading"><p class="eyebrow">${c.experiences}</p><h2>${lang==='en'?'Ways to enjoy':'หลายวิธีในการเข้าร่วม'}</h2></div><div class="experience-grid"><article class="feature feature--image"><img src="${asset('images/hero-shotgun.jpg')}" loading="lazy" alt="${lang==='en'?'Customer using a shotgun under supervision':'ลูกค้าใช้ปืนลูกซองภายใต้การดูแล'}"><div><span>01</span><h3>${c.firearms}</h3><p>${c.firearmsText}</p>${button(url(lang,'prices'),c.pricesCta,'text','view_prices')}</div></article><article class="feature"><span>02</span><h3>${c.alternatives}</h3><p>${c.alternativesText}</p>${button(url(lang,'prices'),c.pricesCta,'text','view_prices')}</article><article class="feature feature--red"><span>03</span><h3>${c.course}</h3><p>${c.courseText}</p>${button(url(lang,'courses'),lang==='en'?'Explore the course':'ดูหลักสูตร','text','select_course')}</article></div></section>
   <section class="section section--ink visit-section"><div class="wrap visit-layout"><div><div class="section-heading"><p class="eyebrow">${c.practical}</p><h2>${lang==='en'?'Everything you need to arrive prepared':'ข้อมูลที่คุณต้องรู้ก่อนมา'}</h2></div><div class="info-grid"><article><i>01</i><h3>${c.safety}</h3><p>${c.safetyText}</p></article><article><i>02</i><h3>${c.facility}</h3><p>${c.facilityText}</p></article><article><i>03</i><h3>${c.noBooking}</h3><p>${c.noBookingText}</p></article><article><i>04</i><h3>${c.identification}</h3><p>${c.identificationText}</p><a class="info-link" href="${url(lang,'range-rules')}">${c.rulesTitle} →</a></article></div></div><figure class="visit-photo"><img data-visit-image data-image-pool="${esc(JSON.stringify(visitPool))}" width="1200" height="900" loading="lazy" alt=""><noscript><img src="${visitPool[0].src}" width="1200" height="900" loading="lazy" alt="${esc(visitPool[0].alt)}"></noscript></figure></div></section>
   ${homeNews(lang)}
@@ -168,4 +181,11 @@ for(const lang of ['en','th']) for(const item of newsItems){
   const route=`news-events/${item.slug}`; const target=path.join(out,lang==='th'?'th':'',route,'index.html'); fs.mkdirSync(path.dirname(target),{recursive:true});
   fs.writeFileSync(target,layout(lang,'news',value(item.title,lang),value(item.metaDescription,lang),newsArticlePage(lang,item),route,{ogType:'article',publishedTime:item.date}));
 }
-console.log(`Built ${Object.keys(renderers).length*2+newsItems.length*2} pages in ${path.relative(root,out)} with base "${base||'/'}"`);
+for(const lang of ['en','th','zh']) {
+  const route=tourOperators.route;
+  const target=path.join(out,lang==='en'?'':lang,route,'index.html');
+  const content=tourOperators.pages[lang];
+  fs.mkdirSync(path.dirname(target),{recursive:true});
+  fs.writeFileSync(target,layout(lang,'tour-operators',content.title,content.intro,tourOperatorPage(lang),route));
+}
+console.log(`Built ${Object.keys(renderers).length*2+newsItems.length*2+3} pages in ${path.relative(root,out)} with base "${base||'/'}"`);

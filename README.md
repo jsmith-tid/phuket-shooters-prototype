@@ -26,13 +26,14 @@ Generated files are written to `dist/` and are not committed.
 - `src/content/site.js` — business details, navigation, prices, packages, staff and controlled range rules
 - `src/content/pages.js` — English/Thai interface copy and the IDPA timetable
 - `src/content/news.js` — data-driven News and Events articles, metadata and optional galleries/CTAs
+- `src/content/tourOperators.js` — homepage operator links and clearly marked demo page copy
 - `scripts/build.js` — dependency-free static generator and shared page templates
 - `public/assets/` — local CSS, JavaScript and images migrated from the live site
 - `public/robots.txt` — prototype crawler block
 - `.github/workflows/pages.yml` — repeatable GitHub Pages build and deployment
 - `CONTENT_REVIEW.md` — source inventory and decisions that need owner review
 
-Every route is generated in both languages. English uses the requested paths (`/prices/`, `/book/`, etc.); Thai uses the matching `/th/` prefix. Links and assets are automatically prefixed with `BASE_PATH`, so the same output works under a GitHub project URL.
+Core routes are generated in English and Thai. English uses the requested paths (`/prices/`, `/book/`, etc.); Thai uses the matching `/th/` prefix. The tour-operator demo also has one scoped Simplified Chinese page at `/zh/groups-tour-operators/`; this does not enable a general Chinese site. Links and assets are automatically prefixed with `BASE_PATH`, so the same output works under a GitHub project URL.
 
 The site ships generated HTML, one CSS file and a small progressive-enhancement script. It is not a client-side SPA and has no Wix runtime dependency.
 
@@ -74,7 +75,11 @@ The Google rating, review count, verification date and Business Profile link are
 4. Review layout and typography. Arabic must set `dir="rtl"` and needs RTL-specific visual QA.
 5. Translate all controlled content from canonical English and obtain business approval.
 
-Chinese, Arabic and Russian are deliberately shown as “Coming soon” in this prototype.
+Chinese, Arabic and Russian remain shown as “Coming soon” in the main language selector. The one Chinese tour-operator demo route is a limited exception, not a translated Chinese site.
+
+### Tour-operator demo
+
+Edit the three homepage link labels and placeholder page copy in `src/content/tourOperators.js`. The links lead to `/groups-tour-operators/`, `/th/groups-tour-operators/` and `/zh/groups-tour-operators/`. Replace the placeholder copy only after confirming group capacity, coach access, facilities and any translated business claims. The coach graphic is a neutral illustration, not a photograph of the range or a transport service.
 
 ### Add a News and Events item
 
@@ -111,6 +116,8 @@ Buttons expose semantic `data-event` hooks. The small event adapter dispatches a
 - `maps_click`
 - `language_change`
 - `reviews_click`
+- `tour_operator_link_click` (includes `language: en`, `zh` or `th`)
+- `tour_operator_enquiry`
 
 No analytics vendor or production account is connected.
 
