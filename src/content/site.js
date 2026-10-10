@@ -90,4 +90,18 @@ const rules = [
  t('If any claim arises against the Phuket Shooters Association or Phuket Shooters Shooting Range for property damage, injury or loss of life, you acknowledge that it will be dealt with under Thai law and within the jurisdiction of the Kingdom of Thailand.','หากมีการเรียกร้องใดๆ ต่อ Phuket Shooters Association หรือ Phuket Shooters Shooting Range สำหรับความเสียหายต่อทรัพย์สิน การบาดเจ็บ หรือการเสียชีวิต ท่านรับทราบว่าจะดำเนินการตามกฎหมายไทยและภายใต้เขตอำนาจของราชอาณาจักรไทย')
 ];
 
+const chinese = require('./chinese');
+const arabic = require('./arabic');
+for (const key of ['descriptor', 'address', 'hours', 'opened']) {
+  business[key].zh = chinese.business[key];
+  business[key].ar = arabic.business[key];
+}
+nav.forEach((item, index) => { item[2].zh = chinese.nav[index]; item[2].ar = arabic.nav[index]; });
+visitImages.forEach((item, index) => { item.alt.zh = chinese.visitAlts[index]; item.alt.ar = arabic.visitAlts[index]; });
+staff.forEach((person, index) => {
+  person[2].zh = chinese.roles[index]; person[2].ar = arabic.roles[index];
+  person[3].zh = chinese.bios[index]; person[3].ar = arabic.bios[index];
+});
+rules.forEach((rule, index) => { rule.zh = chinese.rules[index]; rule.ar = arabic.rules[index]; });
+
 module.exports = { t, business, nav, prices, packages, visitImages, affiliations, staff, rules };

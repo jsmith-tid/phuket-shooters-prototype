@@ -50,3 +50,25 @@
 .tour-operator-strip{scroll-margin-top:82px;border-bottom:1px solid var(--line);background:#e8e3da}.tour-operator-strip__inner{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:center;gap:1.25rem;width:min(var(--max),calc(100% - 48px));margin-inline:auto;padding:12px 0}.tour-operator-strip__inner>img{width:82px;height:auto}.tour-operator-strip__links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center}.tour-operator-strip__links a{display:flex;align-items:center;justify-content:space-between;gap:.55rem;min-width:0;min-height:50px;border-left:1px solid #c5c0b7;padding:.5rem 1rem;color:var(--ink);font-size:.91rem;font-weight:800;line-height:1.35;text-decoration:none;overflow-wrap:anywhere}.tour-operator-strip__links a:hover{text-decoration:underline;text-underline-offset:.2rem}.tour-operator-strip__links a span{flex:none;color:var(--red);font-size:1.2rem}.tour-operator-page__card{max-width:800px;border-left:4px solid var(--red);background:#fff;padding:2rem;box-shadow:var(--shadow)}.tour-operator-page__card>p:not(.eyebrow){max-width:630px;color:#55595d;font-size:1.12rem}.tour-operator-page__languages{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin-top:2rem}.tour-operator-page__languages a{padding:.35rem 0;text-underline-offset:.25rem}.tour-operator-page__languages a[aria-current=page]{color:var(--red);font-weight:800}.operator-home-link{grid-column:3;justify-self:end;color:#fff;font-size:.8rem;font-weight:700;text-decoration:none}
 @media(max-width:900px){.tour-operator-strip__inner{grid-template-columns:72px minmax(0,1fr);gap:.75rem}.tour-operator-strip__inner>img{width:64px}.tour-operator-strip__links{grid-template-columns:1fr}.tour-operator-strip__links a{min-height:44px;border-left:0;border-top:1px solid #c5c0b7;padding:.45rem .25rem}.tour-operator-strip__links a:first-child{border-top:0}}
 @media(max-width:700px){.tour-operator-strip__inner{width:calc(100% - 32px)}.tour-operator-strip__links a{font-size:.94rem}.tour-operator-page__card{padding:1.4rem}.tour-operator-page__card>p:not(.eyebrow){font-size:1rem}.operator-home-link{font-size:.72rem}}
+html[lang="zh-CN"] body{font-family:Arial,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+html[lang="zh-CN"] h1,html[lang="zh-CN"] h2,html[lang="zh-CN"] h3{letter-spacing:0}
+html[lang="ar"] body{font-family:"Noto Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;line-height:1.8}
+html[lang="ar"] h1,html[lang="ar"] h2,html[lang="ar"] h3{letter-spacing:0;line-height:1.3}
+html[dir="rtl"] .skip{left:auto;right:1rem}
+html[dir="rtl"] .language__menu,html[dir="rtl"] .nav-more>div{right:auto;left:0}
+html[dir="rtl"] .home-hero__content{margin-left:0;margin-right:max(24px,calc((100vw - var(--max))/2))}
+html[dir="rtl"] .home-hero__shade{background:linear-gradient(270deg,rgba(10,12,15,.9),rgba(10,12,15,.38) 70%,rgba(10,12,15,.2)),linear-gradient(0deg,rgba(10,12,15,.75),transparent 45%)}
+html[dir="rtl"] .hero-facts{right:auto;left:0}
+html[dir="rtl"] .hero-note,html[dir="rtl"] .price-guidance,html[dir="rtl"] .tour-operator-page__card{border-left:0;border-right:4px solid var(--red)}
+html[dir="rtl"] .hero-note{border-right-width:3px}
+html[dir="rtl"] .course-stats span{border-right:0;border-left:1px solid var(--line)}
+html[dir="rtl"] .contact-grid article{margin:-1px -1px 0 0}
+html[dir="rtl"] .tour-operator-strip__links a{border-left:0;border-right:1px solid #c5c0b7}
+html[dir="rtl"] .button>span,html[dir="rtl"] .tour-operator-strip__links a span{display:inline-block;transform:scaleX(-1)}
+html[dir="rtl"] a[href^="tel:"],html[dir="rtl"] a[href^="mailto:"]{direction:ltr;unicode-bidi:isolate;text-align:right}
+html[dir="rtl"] .booking-form input[type="tel"],html[dir="rtl"] .booking-form input[type="email"],html[dir="rtl"] .booking-form input[type="date"],html[dir="rtl"] .booking-form input[type="time"]{direction:ltr;text-align:left}
+html[dir="rtl"] .price-card strong,html[dir="rtl"] .package-card strong{direction:ltr;text-align:right}
+html[dir="rtl"] .news-back{direction:rtl}
+@media(max-width:900px){.tour-operator-strip__links{grid-template-columns:1fr}html[dir="rtl"] .tour-operator-strip__links a{border-right:0;border-top:1px solid #c5c0b7}html[dir="rtl"] .tour-operator-strip__links a:first-child{border-top:0}}
+@media(min-width:901px){.tour-operator-strip__links{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:700px){html[dir="rtl"] .home-hero__content{margin-left:0;margin-right:16px}html[dir="rtl"] .home-hero__shade{background:linear-gradient(0deg,rgba(10,12,15,.96),rgba(10,12,15,.4))}html[dir="rtl"] .hero-facts{right:0;left:0}html[dir="rtl"] .footer-affiliations h2{text-align:right}html[dir="rtl"] .course-stats span{border-left:0}}

@@ -3,7 +3,8 @@ const tourOperators = {
   links: [
     { lang: 'en', label: 'Tour operators welcome' },
     { lang: 'zh', label: '欢迎旅行社' },
-    { lang: 'th', label: 'ยินดีต้อนรับบริษัททัวร์' }
+    { lang: 'th', label: 'ยินดีต้อนรับบริษัททัวร์' },
+    { lang: 'ar', label: 'نرحّب بشركات السياحة' }
   ],
   // TODO: Replace these clearly marked demo pages with approved group-visit details.
   pages: {
@@ -28,6 +29,13 @@ const tourOperators = {
       body: '如需咨询团体参观，请联系 Phuket Shooters，并告知计划日期及人数。',
       contact: '咨询团体参观',
       englishHome: '返回英文首页'
+    },
+    ar: {
+      title: 'المجموعات وشركات السياحة',
+      intro: 'يجري إعداد معلومات زيارات المجموعات وشركات السياحة.',
+      notice: 'صفحة تجريبية — التفاصيل قيد التأكيد',
+      body: 'للاستفسار عن زيارة جماعية، تواصل مع Phuket Shooters واذكر التاريخ المقترح وعدد الأشخاص.',
+      contact: 'استفسر عن زيارة جماعية'
     }
   }
 };

@@ -61,4 +61,10 @@ const schedule = [
   [3, '09:00–12:00', t('Stage shooting practical applications and problem solving','การประยุกต์ใช้การยิงสเตจและการแก้ปัญหา')], [3, '12:00–13:00', t('Lunch','อาหารกลางวัน')], [3, '13:00–16:00', t('Practical application and certification assessment as an IDPA shooter','การประยุกต์ใชและการประเมินเพื่อรับรองเป็นนักยิง IDPA')]
 ];
 
+const chinese = require('./chinese');
+const arabic = require('./arabic');
+copy.zh = chinese.copy;
+copy.ar = arabic.copy;
+schedule.forEach((entry, index) => { entry[2].zh = chinese.schedule[index]; entry[2].ar = arabic.schedule[index]; });
+
 module.exports = { copy, schedule };
