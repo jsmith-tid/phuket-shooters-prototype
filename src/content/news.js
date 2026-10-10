@@ -38,13 +38,16 @@ const newsItems = [
 
 const { news } = require('./chinese');
 const { news: arabicNews } = require('./arabic');
+const { news: russianNews } = require('./russian');
 for (const item of newsItems) if (item.slug === 'action-air') {
   for (const key of ['title', 'category', 'summary', 'body', 'heroAlt', 'metaDescription']) {
     item[key].zh = news[key];
     item[key].ar = arabicNews[key];
+    item[key].ru = russianNews[key];
   }
   item.translationStatus.zh = 'placeholder';
   item.translationStatus.ar = 'placeholder';
+  item.translationStatus.ru = 'placeholder';
 }
 
 module.exports = { newsItems };

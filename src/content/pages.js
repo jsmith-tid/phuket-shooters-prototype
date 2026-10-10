@@ -63,8 +63,10 @@ const schedule = [
 
 const chinese = require('./chinese');
 const arabic = require('./arabic');
+const russian = require('./russian');
 copy.zh = chinese.copy;
 copy.ar = arabic.copy;
-schedule.forEach((entry, index) => { entry[2].zh = chinese.schedule[index]; entry[2].ar = arabic.schedule[index]; });
+copy.ru = russian.copy;
+schedule.forEach((entry, index) => { entry[2].zh = chinese.schedule[index]; entry[2].ar = arabic.schedule[index]; entry[2].ru = russian.schedule[index]; });
 
 module.exports = { copy, schedule };

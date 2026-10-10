@@ -92,16 +92,18 @@ const rules = [
 
 const chinese = require('./chinese');
 const arabic = require('./arabic');
+const russian = require('./russian');
 for (const key of ['descriptor', 'address', 'hours', 'opened']) {
   business[key].zh = chinese.business[key];
   business[key].ar = arabic.business[key];
+  business[key].ru = russian.business[key];
 }
-nav.forEach((item, index) => { item[2].zh = chinese.nav[index]; item[2].ar = arabic.nav[index]; });
-visitImages.forEach((item, index) => { item.alt.zh = chinese.visitAlts[index]; item.alt.ar = arabic.visitAlts[index]; });
+nav.forEach((item, index) => { item[2].zh = chinese.nav[index]; item[2].ar = arabic.nav[index]; item[2].ru = russian.nav[index]; });
+visitImages.forEach((item, index) => { item.alt.zh = chinese.visitAlts[index]; item.alt.ar = arabic.visitAlts[index]; item.alt.ru = russian.visitAlts[index]; });
 staff.forEach((person, index) => {
-  person[2].zh = chinese.roles[index]; person[2].ar = arabic.roles[index];
-  person[3].zh = chinese.bios[index]; person[3].ar = arabic.bios[index];
+  person[2].zh = chinese.roles[index]; person[2].ar = arabic.roles[index]; person[2].ru = russian.roles[index];
+  person[3].zh = chinese.bios[index]; person[3].ar = arabic.bios[index]; person[3].ru = russian.bios[index];
 });
-rules.forEach((rule, index) => { rule.zh = chinese.rules[index]; rule.ar = arabic.rules[index]; });
+rules.forEach((rule, index) => { rule.zh = chinese.rules[index]; rule.ar = arabic.rules[index]; rule.ru = russian.rules[index]; });
 
 module.exports = { t, business, nav, prices, packages, visitImages, affiliations, staff, rules };

@@ -6,18 +6,19 @@ const { newsItems } = require('../src/content/news');
 const { tourOperators } = require('../src/content/tourOperators');
 const chinese = require('../src/content/chinese');
 const arabic = require('../src/content/arabic');
+const russian = require('../src/content/russian');
 
 const root = path.resolve(__dirname, '..');
 const out = path.join(root, 'dist');
 const base = (process.env.BASE_PATH || '').replace(/\/$/, '');
 const value = (entry, lang) => typeof entry === 'object' && entry !== null && lang in entry ? entry[lang] : entry;
-const local = (lang, en, th, zh) => lang === 'ar' ? (arabic.inline[en] ?? en) : lang === 'zh' ? zh : lang === 'th' ? th : en;
+const local = (lang, en, th, zh) => lang === 'ru' ? (russian.inline[en] ?? en) : lang === 'ar' ? (arabic.inline[en] ?? en) : lang === 'zh' ? zh : lang === 'th' ? th : en;
 const url = (lang, route = '') => `${base}/${lang === 'en' ? '' : `${lang}/`}${route ? `${route}/` : ''}`;
 const asset = file => `${base}/assets/${file}`;
 const money = n => new Intl.NumberFormat('en-US').format(n);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const orderedNewsItems = () => [...newsItems].sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
-const formatDate = (date, lang) => date ? new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : lang === 'zh' ? 'zh-CN' : lang === 'ar' ? 'ar-u-nu-latn' : 'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${date}T00:00:00Z`)) : '';
+const formatDate = (date, lang) => date ? new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : lang === 'zh' ? 'zh-CN' : lang === 'ar' ? 'ar-u-nu-latn' : lang === 'ru' ? 'ru-RU' : 'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${date}T00:00:00Z`)) : '';
 const forwardArrow = lang => lang === 'ar' ? '←' : '→';
 const newsUrl = (lang, item) => url(lang, `news-events/${item.slug}`);
 
@@ -27,13 +28,13 @@ function button(href, label, kind = 'primary', event = '', external = false) {
 
 function languageMenu(lang, route, c) {
   return `<div class="language" data-language>
-    <button class="language__button" type="button" aria-label="${c.language}: ${lang === 'ar' ? c.arabic : local(lang,c.english,c.thai,c.chinese)}" aria-expanded="false" aria-controls="language-menu">${lang === 'ar' ? 'AR' : local(lang,'EN','TH','ZH')}<span aria-hidden="true">⌄</span></button>
+    <button class="language__button" type="button" aria-label="${c.language}: ${lang === 'ar' ? c.arabic : lang === 'ru' ? c.russian : local(lang,c.english,c.thai,c.chinese)}" aria-expanded="false" aria-controls="language-menu">${lang === 'ar' ? 'AR' : lang === 'ru' ? 'RU' : local(lang,'EN','TH','ZH')}<span aria-hidden="true">⌄</span></button>
     <div class="language__menu" id="language-menu" hidden>
       <a href="${url('en', route)}" hreflang="en" lang="en" data-event="language_change"${lang === 'en' ? ' aria-current="true"' : ''}>English</a>
       <a href="${url('th', route)}" hreflang="th" lang="th" data-event="language_change"${lang === 'th' ? ' aria-current="true"' : ''}>ไทย</a>
       <a href="${url('zh', route)}" hreflang="zh-CN" lang="zh-CN" data-event="language_change"${lang === 'zh' ? ' aria-current="true"' : ''}>简体中文</a>
       <a href="${url('ar', route)}" hreflang="ar" lang="ar" dir="rtl" data-event="language_change"${lang === 'ar' ? ' aria-current="true"' : ''}>العربية</a>
-      <span><b>${c.russian}</b><small>${c.comingSoon}</small></span>
+      <a href="${url('ru', route)}" hreflang="ru" lang="ru" data-event="language_change"${lang === 'ru' ? ' aria-current="true"' : ''}>Русский</a>
     </div>
   </div>`;
 }
@@ -45,11 +46,12 @@ function affiliationsFooter(lang) {
 
 function layout(lang, page, title, description, content, routeOverride = null, options = {}) {
   const c = copy[lang];
+  const whatsappContactLabel = local(lang, 'Contact us with WhatsApp', 'ติดต่อเราทาง WhatsApp', '通过 WhatsApp 联系我们');
   const route = routeOverride ?? nav.find(item => item[0] === page)?.[1] ?? '';
   const navHtml = nav.slice(0, 6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
   const moreHtml = nav.slice(6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
   const socialMeta = options.ogType ? `<meta property="og:type" content="${esc(options.ogType)}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">${options.publishedTime ? `<meta property="article:published_time" content="${esc(options.publishedTime)}">` : ''}` : '';
-  const languageAlternates = `<link rel="alternate" hreflang="en" href="${url('en', route)}"><link rel="alternate" hreflang="th" href="${url('th', route)}"><link rel="alternate" hreflang="zh-CN" href="${url('zh', route)}"><link rel="alternate" hreflang="ar" href="${url('ar', route)}">`;
+  const languageAlternates = `<link rel="alternate" hreflang="en" href="${url('en', route)}"><link rel="alternate" hreflang="th" href="${url('th', route)}"><link rel="alternate" hreflang="zh-CN" href="${url('zh', route)}"><link rel="alternate" hreflang="ar" href="${url('ar', route)}"><link rel="alternate" hreflang="ru" href="${url('ru', route)}">`;
   return `<!doctype html>
 <html lang="${lang === 'zh' ? 'zh-CN' : lang}"${lang === 'ar' ? ' dir="rtl"' : ''}>
 <head>
@@ -71,7 +73,7 @@ function layout(lang, page, title, description, content, routeOverride = null, o
   </header>
   <main id="main">${content}</main>
   <footer class="site-footer">${affiliationsFooter(lang)}<div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div></div><div><h2>${c.footerExplore}</h2>${nav.map(x=>`<a href="${url(lang,x[1])}">${x[0] === 'team' && lang === 'en' ? 'The Team' : value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
-  <a class="whatsapp-float" href="${business.whatsapp}" target="_blank" rel="noopener noreferrer" data-event="whatsapp_click" aria-label="${lang === 'zh' ? '通过 WhatsApp 联系我们' : lang === 'ar' ? 'تواصل معنا عبر واتساب' : lang === 'en' ? 'Contact us with WhatsApp' : 'ติดต่อเราทาง WhatsApp'}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span class="whatsapp-float__tooltip" aria-hidden="true">${lang === 'zh' ? '通过 WhatsApp 联系我们' : lang === 'ar' ? 'تواصل معنا عبر واتساب' : lang === 'en' ? 'Contact us with WhatsApp' : 'ติดต่อเราทาง WhatsApp'}</span></a>
+  <a class="whatsapp-float" href="${business.whatsapp}" target="_blank" rel="noopener noreferrer" data-event="whatsapp_click" aria-label="${whatsappContactLabel}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span class="whatsapp-float__tooltip" aria-hidden="true">${whatsappContactLabel}</span></a>
   <script src="${asset('js/site.js')}" defer></script>
 </body></html>`;
 }
@@ -123,7 +125,7 @@ function home(lang) {
 
 function pricesPage(lang) {
   const c=copy[lang];
-  return `${pageHeader('Phuket Shooters',c.pricesTitle,c.pricesIntro,`<div class="hero-note"><b>${value(business.hours,lang)}</b><span>${c.noBooking}</span></div>`)}<section class="section wrap"><aside class="price-guidance"><p>${c.pricesHelp}</p><a href="${business.whatsapp}" target="_blank" rel="noopener noreferrer" data-event="whatsapp_click">${c.whatsapp} →</a></aside><div class="section-heading"><p class="eyebrow">01</p><h2>${c.individual}</h2></div><div class="price-grid">${prices.map(([name,en,th,price],i)=>`<article class="price-card"><div><h3>${lang==='ar'?(arabic.priceNames[name]||name):lang==='zh'?({Shotgun:'霰弹枪',Archery:'射箭','B.B. Gun':'BB 枪',Crossbow:'弩'}[name]||name):name}</h3>${en?`<p>${lang==='ar'?arabic.priceDetails[i]:local(lang,en,th,chinese.priceDetails[i])}</p>`:''}</div><strong><span>฿</span>${money(price)}</strong></article>`).join('')}</div></section><section class="section section--soft"><div class="wrap"><div class="section-heading"><p class="eyebrow">02</p><h2>${c.packages}</h2></div><div class="package-grid">${packages.map(([price,desc],i)=>`<article class="package-card"><span>${String(i+1).padStart(2,'0')}</span><h3>${lang==='ar'?arabic.packages[i]:lang==='zh'?desc.replace(/bullets/g,'发子弹').replace(/targets/g,'张靶纸').replace(/Shotgun/g,'霰弹枪').replace(/gauge shotgun/g,'号霰弹枪').replace(/Archery/g,'射箭').replace(/Crossbow/g,'弩').replace(/B\.B\. Gun/g,'BB 枪'):desc.replace(/bullets/g,lang==='en'?'bullets':'นัด').replace(/targets/g,lang==='en'?'targets':'เป้า')}</h3><strong>฿${money(price)}</strong></article>`).join('')}</div></div></section>${cta(lang,local(lang,'Know what you want to try?','เลือกได้แล้วว่าอยากลองอะไร?','想好体验哪项了吗？'),c.noBookingText)}`;
+  return `${pageHeader('Phuket Shooters',c.pricesTitle,c.pricesIntro,`<div class="hero-note"><b>${value(business.hours,lang)}</b><span>${c.noBooking}</span></div>`)}<section class="section wrap"><aside class="price-guidance"><p>${c.pricesHelp}</p><a href="${business.whatsapp}" target="_blank" rel="noopener noreferrer" data-event="whatsapp_click">${c.whatsapp} →</a></aside><div class="section-heading"><p class="eyebrow">01</p><h2>${c.individual}</h2></div><div class="price-grid">${prices.map(([name,en,th,price],i)=>`<article class="price-card"><div><h3>${lang==='ru'?(russian.priceNames[name]||name):lang==='ar'?(arabic.priceNames[name]||name):lang==='zh'?({Shotgun:'霰弹枪',Archery:'射箭','B.B. Gun':'BB 枪',Crossbow:'弩'}[name]||name):name}</h3>${en?`<p>${lang==='ru'?russian.priceDetails[i]:lang==='ar'?arabic.priceDetails[i]:local(lang,en,th,chinese.priceDetails[i])}</p>`:''}</div><strong><span>฿</span>${money(price)}</strong></article>`).join('')}</div></section><section class="section section--soft"><div class="wrap"><div class="section-heading"><p class="eyebrow">02</p><h2>${c.packages}</h2></div><div class="package-grid">${packages.map(([price,desc],i)=>`<article class="package-card"><span>${String(i+1).padStart(2,'0')}</span><h3>${lang==='ru'?russian.packages[i]:lang==='ar'?arabic.packages[i]:lang==='zh'?desc.replace(/bullets/g,'发子弹').replace(/targets/g,'张靶纸').replace(/Shotgun/g,'霰弹枪').replace(/gauge shotgun/g,'号霰弹枪').replace(/Archery/g,'射箭').replace(/Crossbow/g,'弩').replace(/B\.B\. Gun/g,'BB 枪'):desc.replace(/bullets/g,lang==='en'?'bullets':'นัด').replace(/targets/g,lang==='en'?'targets':'เป้า')}</h3><strong>฿${money(price)}</strong></article>`).join('')}</div></div></section>${cta(lang,local(lang,'Know what you want to try?','เลือกได้แล้วว่าอยากลองอะไร?','想好体验哪项了吗？'),c.noBookingText)}`;
 }
 
 function bookPage(lang) {
@@ -138,7 +140,7 @@ function coursesPage(lang) {
 
 function teamPage(lang) {
   const c=copy[lang];
-  return `${pageHeader('Phuket Shooters',c.teamTitle,c.teamIntro)}<section class="section wrap"><div class="team-grid">${staff.map(([id,name,role,bio,languages],i)=>`<article class="staff-card" data-staff="${id}"><div class="staff-card__portrait"><img src="${asset(`images/${id}.jpg`)}" loading="lazy" alt="${lang==='ar'?`${name}، ${value(role,lang)} في Phuket Shooters`:local(lang,`${name}, ${value(role,lang)} at Phuket Shooters`,`${name} ${value(role,lang)} ที่ Phuket Shooters`,`${name}，Phuket Shooters 的${value(role,lang)}`)}"></div><div><p class="staff-card__role">${value(role,lang)}</p><h2>${name}</h2><p>${value(bio,lang)}</p><small><b>${c.languages}:</b> ${lang==='ar'?arabic.languages[i]:lang==='zh'?languages.replace(/Thai/g,'泰语').replace(/English/g,'英语').replace(/Mandarin/g,'普通话').replace(/Arabic/g,'阿拉伯语').replace(/Malay/g,'马来语').replace(/some /g,'少量').replace(/a little /g,'少量').replace(/learning /g,'正在学习 '):languages}</small></div></article>`).join('')}</div></section>`;
+  return `${pageHeader('Phuket Shooters',c.teamTitle,c.teamIntro)}<section class="section wrap"><div class="team-grid">${staff.map(([id,name,role,bio,languages],i)=>`<article class="staff-card" data-staff="${id}"><div class="staff-card__portrait"><img src="${asset(`images/${id}.jpg`)}" loading="lazy" alt="${lang==='ru'?`${name}, ${value(role,lang)} в Phuket Shooters`:lang==='ar'?`${name}، ${value(role,lang)} في Phuket Shooters`:local(lang,`${name}, ${value(role,lang)} at Phuket Shooters`,`${name} ${value(role,lang)} ที่ Phuket Shooters`,`${name}，Phuket Shooters 的${value(role,lang)}`)}"></div><div><p class="staff-card__role">${value(role,lang)}</p><h2>${name}</h2><p>${value(bio,lang)}</p><small><b>${c.languages}:</b> ${lang==='ru'?russian.languages[i]:lang==='ar'?arabic.languages[i]:lang==='zh'?languages.replace(/Thai/g,'泰语').replace(/English/g,'英语').replace(/Mandarin/g,'普通话').replace(/Arabic/g,'阿拉伯语').replace(/Malay/g,'马来语').replace(/some /g,'少量').replace(/a little /g,'少量').replace(/learning /g,'正在学习 '):languages}</small></div></article>`).join('')}</div></section>`;
 }
 
 function rulesPage(lang) {
@@ -152,7 +154,7 @@ function findPage(lang) {
 }
 
 function galleryPage(lang) {
- const c=copy[lang]; const alts=lang==='ar'?['رامٍ يشارك في مرحلة خارجية','زائر يستخدم بندقية تحت إشراف مدرب','تدريب على المسدس في الميدان الداخلي','مدرب سلامة يقف بجوار زائر','مرحلة رماية تنافسية','زائر يستعد في مسار رماية داخلي','مدرب يرشد زائرًا','تدريب على الرماية في Phuket Shooters','زائر في الميدان','جلسة رماية تحت إشراف السلامة','تدريب على المنافسات','مشاركون في Phuket Shooters']:lang==='en'?['Shooter taking part in an outdoor stage','Visitor using a rifle under instructor supervision','Indoor pistol range training','Range safety instructor beside a visitor','Competition shooting stage','Visitor preparing at an indoor shooting bay','Instructor guiding a visitor','Shooting practice at Phuket Shooters','Customer on the range','Safety-supervised shooting session','Competition training','Participants at Phuket Shooters']:lang==='th'?['นักยิงในสเตจกลางแจ้ง','ผู้เยี่ยมชมใช้ปืนยาวภายใต้การดูแล','การฝึกปืนพกในสนามในร่ม','เจ้าหน้าที่ความปลอดภัยข้างผู้เยี่ยมชม','สเตจยิงปืนแข่งขัน','ผู้เยี่ยมชมเตรียมตัวที่ช่องยิงในร่ม','ผู้สอนแนะนำผู้เยี่ยมชม','การฝึกยิงที่ Phuket Shooters','ลูกค้าในสนาม','การยิงภายใต้การดูแลความปลอดภัย','การฝึกเพื่อการแข่งขัน','ผู้เข้าร่วมที่ Phuket Shooters']:['射手参加户外射击关卡','访客在教练指导下使用步枪','室内手枪训练','靶场安全教练陪同访客','竞技射击关卡','访客在室内射击位准备','教练指导访客','在 Phuket Shooters 练习射击','靶场内的访客','在安全监督下射击','竞技射击训练','Phuket Shooters 的参加者'];
+ const c=copy[lang]; const alts=lang==='ru'?russian.galleryAlts:lang==='ar'?['رامٍ يشارك في مرحلة خارجية','زائر يستخدم بندقية تحت إشراف مدرب','تدريب على المسدس في الميدان الداخلي','مدرب سلامة يقف بجوار زائر','مرحلة رماية تنافسية','زائر يستعد في مسار رماية داخلي','مدرب يرشد زائرًا','تدريب على الرماية في Phuket Shooters','زائر في الميدان','جلسة رماية تحت إشراف السلامة','تدريب على المنافسات','مشاركون في Phuket Shooters']:lang==='en'?['Shooter taking part in an outdoor stage','Visitor using a rifle under instructor supervision','Indoor pistol range training','Range safety instructor beside a visitor','Competition shooting stage','Visitor preparing at an indoor shooting bay','Instructor guiding a visitor','Shooting practice at Phuket Shooters','Customer on the range','Safety-supervised shooting session','Competition training','Participants at Phuket Shooters']:lang==='th'?['นักยิงในสเตจกลางแจ้ง','ผู้เยี่ยมชมใช้ปืนยาวภายใต้การดูแล','การฝึกปืนพกในสนามในร่ม','เจ้าหน้าที่ความปลอดภัยข้างผู้เยี่ยมชม','สเตจยิงปืนแข่งขัน','ผู้เยี่ยมชมเตรียมตัวที่ช่องยิงในร่ม','ผู้สอนแนะนำผู้เยี่ยมชม','การฝึกยิงที่ Phuket Shooters','ลูกค้าในสนาม','การยิงภายใต้การดูแลความปลอดภัย','การฝึกเพื่อการแข่งขัน','ผู้เข้าร่วมที่ Phuket Shooters']:['射手参加户外射击关卡','访客在教练指导下使用步枪','室内手枪训练','靶场安全教练陪同访客','竞技射击关卡','访客在室内射击位准备','教练指导访客','在 Phuket Shooters 练习射击','靶场内的访客','在安全监督下射击','竞技射击训练','Phuket Shooters 的参加者'];
  return `${pageHeader('Phuket Shooters',c.galleryTitle,c.galleryIntro)}<section class="section wrap"><div class="gallery-grid">${alts.map((alt,i)=>`<figure><img src="${asset(`images/gallery-${String(i+1).padStart(2,'0')}.jpg`)}" loading="lazy" alt="${alt}"><figcaption>${String(i+1).padStart(2,'0')} / Phuket Shooters</figcaption></figure>`).join('')}</div></section>${cta(lang,local(lang,'See it for yourself','มาสัมผัสด้วยตัวคุณเอง','亲自来体验'),c.noBookingText)}`;
 }
 
@@ -176,22 +178,23 @@ const chineseMetadata={
  home:['普吉射击靶场','了解 Phuket Shooters 的活动、价格及到访信息。'], prices:['靶场价格','Phuket Shooters 的单项活动和套餐价格。'], book:['预约与咨询','向 Phuket Shooters 咨询到访事宜的演示表单。'], courses:['IDPA 课程','Phuket Shooters 三天 IDPA 课程信息及时间表。'], news:['新闻与活动','Phuket Shooters 的新闻、活动及公告。'], team:['认识团队','认识 Phuket Shooters 的教练、安全人员及客户服务团队。'], rules:['靶场规则','Phuket Shooters 的访客及安全规则。'], 'find-us':['如何找到我们','普吉查龙 Phuket Shooters 的地址、营业时间及联系方式。'], gallery:['相册','Phuket Shooters 的训练及访客体验照片。']
 };
 const arabicMetadata = arabic.metadata;
+const russianMetadata = russian.metadata;
 
 fs.rmSync(out,{recursive:true,force:true}); fs.mkdirSync(out,{recursive:true}); fs.cpSync(path.join(root,'public'),out,{recursive:true});
-for(const lang of ['en','th','zh','ar']) for(const [page,renderer] of Object.entries(renderers)){
+for(const lang of ['en','th','zh','ar','ru']) for(const [page,renderer] of Object.entries(renderers)){
   const route=nav.find(x=>x[0]===page)?.[1]||''; const target=path.join(out,lang==='en'?'':lang,route,'index.html'); fs.mkdirSync(path.dirname(target),{recursive:true});
-  const [title,desc]=lang==='ar'?arabicMetadata[page]:lang==='zh'?chineseMetadata[page]:metadata[page]; const localTitle=lang==='en'?title:copy[lang][page==='home'?'homeTitle':page==='find-us'?'findTitle':`${page}Title`]||title;
+  const [title,desc]=lang==='ru'?russianMetadata[page]:lang==='ar'?arabicMetadata[page]:lang==='zh'?chineseMetadata[page]:metadata[page]; const localTitle=lang==='en'?title:copy[lang][page==='home'?'homeTitle':page==='find-us'?'findTitle':`${page}Title`]||title;
   fs.writeFileSync(target,layout(lang,page,localTitle,desc,renderer(lang)));
 }
-for(const lang of ['en','th','zh','ar']) for(const item of newsItems){
+for(const lang of ['en','th','zh','ar','ru']) for(const item of newsItems){
   const route=`news-events/${item.slug}`; const target=path.join(out,lang==='en'?'':lang,route,'index.html'); fs.mkdirSync(path.dirname(target),{recursive:true});
   fs.writeFileSync(target,layout(lang,'news',value(item.title,lang),value(item.metaDescription,lang),newsArticlePage(lang,item),route,{ogType:'article',publishedTime:item.date}));
 }
-for(const lang of ['en','th','zh','ar']) {
+for(const lang of ['en','th','zh','ar','ru']) {
   const route=tourOperators.route;
   const target=path.join(out,lang==='en'?'':lang,route,'index.html');
   const content=tourOperators.pages[lang];
   fs.mkdirSync(path.dirname(target),{recursive:true});
   fs.writeFileSync(target,layout(lang,'tour-operators',content.title,content.intro,tourOperatorPage(lang),route));
 }
-console.log(`Built ${Object.keys(renderers).length*4+newsItems.length*4+4} pages in ${path.relative(root,out)} with base "${base||'/'}"`);
+console.log(`Built ${Object.keys(renderers).length*5+newsItems.length*5+5} pages in ${path.relative(root,out)} with base "${base||'/'}"`);
