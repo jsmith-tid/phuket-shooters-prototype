@@ -29,6 +29,13 @@ const nav = [
   ['rules', 'range-rules', t('Range Rules', 'กฎของสนาม')], ['gallery', 'gallery', t('Gallery', 'แกลเลอรี')]
 ];
 
+const socialLinks = [
+  { name: 'Facebook', url: 'https://www.facebook.com/profile.php?id=100076195870500', icon: 'facebook.svg' },
+  { name: 'YouTube', url: 'https://www.youtube.com/channel/UCB3M-Qd_sflXeG1T5Cxt5ag', icon: 'youtube.svg' },
+  { name: 'TikTok', url: 'https://www.tiktok.com/@phuket.shooters?_t=8rsPgywiB8h&_r=1', icon: 'tiktok.svg' },
+  { name: 'Instagram', url: 'https://www.instagram.com/phuketshootersii?igsh=MWgybHd5M2J5b3o1NQ==', icon: 'instagram.svg' }
+];
+
 const prices = [
   ['9mm', '10 bullets', '10 นัด', 1250], ['.45', '10 bullets', '10 นัด', 1250],
   ['.38', '10 bullets', '10 นัด', 1250], ['.22', '10 bullets', '10 นัด', 1050],
@@ -106,4 +113,4 @@ staff.forEach((person, index) => {
 });
 rules.forEach((rule, index) => { rule.zh = chinese.rules[index]; rule.ar = arabic.rules[index]; rule.ru = russian.rules[index]; });
 
-module.exports = { t, business, nav, prices, packages, visitImages, affiliations, staff, rules };
+module.exports = { t, business, nav, socialLinks, prices, packages, visitImages, affiliations, staff, rules };

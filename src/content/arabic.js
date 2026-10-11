@@ -20,7 +20,7 @@ const copy = {
   findTitle: 'كيف تصل إلينا', findIntro: 'معلومات عملية لزيارتك للميدان في تشالونغ.', address: 'العنوان', hours: 'ساعات العمل', contact: 'التواصل', nearby: 'معالم قريبة', landmark: 'نحن بالقرب من Phuket Dolphin Show وCrocodile Show Phuket and Mini Zoo وLion Land وCobra Show وJurafish.', mapNote: 'استخدم الخريطة التفاعلية أعلاه أو افتح الاتجاهات في خرائط Google.',
   galleryTitle: 'معرض الصور', galleryIntro: '',
   newsTitle: 'الأخبار والفعاليات', newsIntro: 'ستُنشر هنا أخبار الميدان وفعالياته وتحديثاته.', latestUpdate: 'آخر تحديث', viewAllNews: 'عرض جميع الأخبار والفعاليات', readMore: 'اقرأ المزيد', backToNews: 'العودة إلى الأخبار والفعاليات', exampleContent: 'محتوى توضيحي — بانتظار نص معتمد',
-  footerExplore: 'استكشف', footerVisit: 'زرنا', reviewsLabel: 'تقييمات Google', reviewsCount: 'تقييمًا', reviewsLink: 'اقرأ التقييمات على Google',
+  footerExplore: 'استكشف', footerVisit: 'زرنا', followUs: 'تابعنا', opensNewTab: 'يفتح في علامة تبويب جديدة', reviewsLabel: 'تقييمات Google', reviewsCount: 'تقييمًا', reviewsLink: 'اقرأ التقييمات على Google',
   comingSoon: 'قريبًا', language: 'اللغة', english: 'English', thai: 'ไทย', chinese: '简体中文', arabic: 'العربية', russian: 'الروسية'
 };
 

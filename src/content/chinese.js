@@ -20,7 +20,7 @@ const copy = {
   findTitle: '如何找到我们', findIntro: '前往查龙靶场的实用信息。', address: '地址', hours: '营业时间', contact: '联系方式', nearby: '附近地标', landmark: '我们靠近 Phuket Dolphin Show、Crocodile Show Phuket and Mini Zoo、Lion Land、Cobra Show 和 Jurafish。', mapNote: '使用上方互动地图，或在 Google 地图中打开导航。',
   galleryTitle: '相册', galleryIntro: '',
   newsTitle: '新闻与活动', newsIntro: '靶场的新闻、活动和公告将在此发布。', latestUpdate: '最新动态', viewAllNews: '查看全部新闻与活动', readMore: '阅读更多', backToNews: '返回新闻与活动', exampleContent: '示例内容——等待批准的文案',
-  footerExplore: '探索', footerVisit: '到访', reviewsLabel: 'Google 评价', reviewsCount: '条评价', reviewsLink: '在 Google 查看评价',
+  footerExplore: '探索', footerVisit: '到访', followUs: '关注我们', opensNewTab: '在新标签页中打开', reviewsLabel: 'Google 评价', reviewsCount: '条评价', reviewsLink: '在 Google 查看评价',
   comingSoon: '即将推出', language: '语言', english: 'English', thai: 'ไทย', chinese: '简体中文', arabic: '阿拉伯语', russian: '俄语'
 };
 

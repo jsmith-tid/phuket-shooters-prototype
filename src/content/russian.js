@@ -20,7 +20,7 @@ const copy = {
   findTitle: 'Как нас найти', findIntro: 'Полезная информация для посещения тира в Чалонге.', address: 'Адрес', hours: 'Часы работы', contact: 'Контакты', nearby: 'Ориентиры поблизости', landmark: 'Мы находимся рядом с Phuket Dolphin Show, Crocodile Show Phuket and Mini Zoo, Lion Land, Cobra Show и Jurafish.', mapNote: 'Воспользуйтесь интерактивной картой выше или откройте маршрут в Google Картах.',
   galleryTitle: 'Галерея', galleryIntro: '',
   newsTitle: 'Новости и события', newsIntro: 'Здесь будут публиковаться новости, события и объявления тира.', latestUpdate: 'Последнее обновление', viewAllNews: 'Все новости и события', readMore: 'Читать далее', backToNews: 'Назад к новостям и событиям', exampleContent: 'Пример материала — ожидается утверждённый текст',
-  footerExplore: 'Разделы сайта', footerVisit: 'Посетите нас', reviewsLabel: 'Отзывы в Google', reviewsCount: 'отзывов', reviewsLink: 'Читать отзывы в Google',
+  footerExplore: 'Разделы сайта', footerVisit: 'Посетите нас', followUs: 'Подписывайтесь', opensNewTab: 'откроется в новой вкладке', reviewsLabel: 'Отзывы в Google', reviewsCount: 'отзывов', reviewsLink: 'Читать отзывы в Google',
   comingSoon: 'Скоро', language: 'Язык', english: 'English', thai: 'ไทย', chinese: '简体中文', arabic: 'العربية', russian: 'Русский'
 };
 

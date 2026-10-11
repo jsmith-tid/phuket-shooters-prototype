@@ -73,3 +73,10 @@ html[dir="rtl"] .news-back{direction:rtl}
 @media(min-width:901px){.tour-operator-strip__links{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){html[dir="rtl"] .home-hero__content{margin-left:0;margin-right:16px}html[dir="rtl"] .home-hero__shade{background:linear-gradient(0deg,rgba(10,12,15,.96),rgba(10,12,15,.4))}html[dir="rtl"] .hero-facts{right:0;left:0}html[dir="rtl"] .footer-affiliations h2{text-align:right}html[dir="rtl"] .course-stats span{border-left:0}}
 @media(max-width:700px){html[lang="ru"] .home-hero h1{font-size:clamp(2.25rem,11vw,4rem);line-height:1.12}html[lang="ru"] .booking-form .form-heading h2{font-size:clamp(1.25rem,5vw,1.65rem)}}
+.footer-social{direction:ltr;text-align:left}
+.footer-social h2{margin:0 0 .35rem;color:#aeb1b5}
+.footer-social__links{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:.3rem}
+.footer-social__links a{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px}
+.footer-social__links img{width:24px;height:24px;opacity:.8;transition:opacity .15s ease,filter .15s ease}
+.footer-social__links a:hover img,.footer-social__links a:focus-visible img{opacity:1;filter:brightness(1.5)}
+html[dir="rtl"] .footer-social h2{direction:rtl;text-align:left}
