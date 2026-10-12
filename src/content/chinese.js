@@ -1,6 +1,6 @@
 // Draft Simplified Chinese (zh-CN) copy for prototype review. English remains canonical.
 const copy = {
-  skip: '跳至内容', menu: '菜单', close: '关闭', prototype: '非官方演示版 · 不会提交预订',
+  skip: '跳至内容', menu: '菜单', close: '关闭',
   pricesCta: '查看价格', bookCta: '预约／咨询', whatsapp: '通过 WhatsApp 联系', call: '致电我们', directions: '打开导航',
   homeTitle: '专业靶场，专人指导。',
   homeIntro: '无论您是初次体验还是经验丰富的射手，都欢迎来到我们专门建造的靶场。训练有素的安全人员会全程在场指导。您可以选择枪械、射箭、弩和 BB 枪。',

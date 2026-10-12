@@ -2,7 +2,7 @@ const { t } = require('./site');
 
 const copy = {
   en: {
-    skip: 'Skip to content', menu: 'Menu', close: 'Close', prototype: 'Unofficial prototype · No bookings are submitted',
+    skip: 'Skip to content', menu: 'Menu', close: 'Close',
     pricesCta: 'See prices', bookCta: 'Book / enquire', whatsapp: 'WhatsApp us', call: 'Call us', directions: 'Open directions',
     homeTitle: 'Professional Range. Expert Supervision.',
     homeIntro: 'Everyone from beginners to experienced shooters are welcome at our purpose-built range, with trained safety staff on hand throughout. Choose from firearms, archery, crossbows and B.B. guns.',
@@ -27,7 +27,7 @@ const copy = {
     comingSoon: 'Coming soon', language: 'Language', english: 'English', thai: 'ไทย', chinese: 'Chinese', arabic: 'Arabic', russian: 'Russian'
   },
   th: {
-    skip: 'ข้ามไปยังเนื้อหา', menu: 'เมนู', close: 'ปิด', prototype: 'ต้นแบบไม่เป็นทางการ · ไม่มีการส่งการจองจริง',
+    skip: 'ข้ามไปยังเนื้อหา', menu: 'เมนู', close: 'ปิด',
     pricesCta: 'ดูราคา', bookCta: 'จอง / สอบถาม', whatsapp: 'ติดต่อทาง WhatsApp', call: 'โทรหาเรา', directions: 'เปิดเส้นทาง',
     homeTitle: 'สนามยิงปืนมาตรฐาน ดูแลโดยผู้เชี่ยวชาญ',
     homeIntro: 'ยินดีต้อนรับทั้งผู้มาเยือนครั้งแรกและนักยิงที่มีประสบการณ์สู่สนามที่สร้างขึ้นโดยเฉพาะของเรา พร้อมเจ้าหน้าที่ความปลอดภัยที่ผ่านการฝึกอบรมคอยดูแลตลอดเวลา เลือกอาวุธปืน ยิงธนู หน้าไม้ และปืนบีบี',

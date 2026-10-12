@@ -1,6 +1,6 @@
 // Draft Modern Standard Arabic (ar) copy for prototype review. English remains canonical.
 const copy = {
-  skip: 'انتقل إلى المحتوى', menu: 'القائمة', close: 'إغلاق', prototype: 'نموذج تجريبي غير رسمي · لا تُرسل طلبات الحجز',
+  skip: 'انتقل إلى المحتوى', menu: 'القائمة', close: 'إغلاق',
   pricesCta: 'اطّلع على الأسعار', bookCta: 'احجز أو استفسر', whatsapp: 'تواصل عبر واتساب', call: 'اتصل بنا', directions: 'افتح الاتجاهات',
   homeTitle: 'ميدان احترافي. إشراف خبير.',
   homeIntro: 'نرحّب بالجميع، من المبتدئين إلى الرماة ذوي الخبرة، في ميداننا المصمم خصيصًا للرماية، مع وجود فريق سلامة مدرّب طوال الزيارة. اختر من الأسلحة النارية والرماية بالقوس والنشاب وبنادق BB.',

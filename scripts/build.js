@@ -68,7 +68,6 @@ function layout(lang, page, title, description, content, routeOverride = null, o
 </head>
 <body class="page-${page}">
   <a class="skip" href="#main">${c.skip}</a>
-  <div class="prototype-bar">${c.prototype}</div>
   <header class="site-header">
     <a class="brand" href="${url(lang)}" aria-label="Phuket Shooters ${value(business.descriptor,lang)}"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><i>${c.menu}</i></button>
