@@ -29,14 +29,14 @@ Generated files are written to `dist/` and are not committed.
 - `src/content/arabic.js` — draft Modern Standard Arabic page, shared and article translations
 - `src/content/russian.js` — draft Russian page, shared and article translations
 - `src/content/news.js` — data-driven News and Events articles, metadata and optional galleries/CTAs
-- `src/content/tourOperators.js` — homepage operator links and clearly marked demo page copy
+- `src/content/tourOperators.js` — draft operator information and group-request preview copy in English, Thai and Simplified Chinese
 - `scripts/build.js` — dependency-free static generator and shared page templates
 - `public/assets/` — local CSS, JavaScript and images migrated from the live site
 - `public/robots.txt` — prototype crawler block
 - `.github/workflows/pages.yml` — repeatable GitHub Pages build and deployment
 - `CONTENT_REVIEW.md` — source inventory and decisions that need owner review
 
-Core routes are generated in English, Thai, Simplified Chinese, Arabic and Russian. English uses the requested paths (`/prices/`, `/book/`, etc.); the other languages use matching `/th/`, `/zh/`, `/ar/` and `/ru/` prefixes. The language selector links to the equivalent page in each available language, including News and Events articles and the tour-operator demo. Arabic pages use `dir="rtl"` and scoped right-to-left styles. Links and assets are automatically prefixed with `BASE_PATH`, so the same output works under a GitHub project URL.
+Core routes are generated in English, Thai, Simplified Chinese, Arabic and Russian. English uses the requested paths (`/prices/`, `/book/`, etc.); the other languages use matching `/th/`, `/zh/`, `/ar/` and `/ru/` prefixes. The operator information and group-request preview routes exist only in English, Thai and Simplified Chinese; their language selectors have only those three options. Arabic pages use `dir="rtl"` and scoped right-to-left styles. Links and assets are automatically prefixed with `BASE_PATH`, so the same output works under a GitHub project URL.
 
 The site ships generated HTML, one CSS file and a small progressive-enhancement script. It is not a client-side SPA and has no Wix runtime dependency.
 
@@ -80,9 +80,11 @@ The Google rating, review count, verification date and Business Profile link are
 
 Chinese, Arabic and Russian are available as draft prototypes.
 
-### Tour-operator demo
+### Tour operators and group-request preview
 
-The homepage tour-operator strip has exactly three links: English, Simplified Chinese and Thai. Edit their labels and the placeholder page copy in `src/content/tourOperators.js`. Arabic and Russian operator demo pages exist for equivalent-page language switching but are deliberately not linked from the homepage strip. Replace placeholder copy only after confirming group capacity, coach access, facilities and any translated business claims. The coach graphic is a neutral illustration, not a photograph of the range or a transport service.
+The homepage operator strip is disabled but retained in `scripts/build.js` for possible restoration. A quiet link beneath the footer social icons leads to `/groups-tour-operators/` in English, `/th/groups-tour-operators/` in Thai and `/zh/groups-tour-operators/` in Simplified Chinese. Each information page links to its separate `group-booking/` preview page. These pages are not generated in Arabic or Russian.
+
+The group form is a **local-only interaction**: its button previews proposed visit details on the same page. It makes no network request, creates no reference, stores no data and confirms no booking. Visitors should not use it to contact the business; real phone and WhatsApp links remain available. Coach capacity (up to four) and a 1–4-hour visit time are explicitly provisional. See [docs/launch-checks.md](docs/launch-checks.md) for outstanding decisions and translation review.
 
 ### Add a News and Events item
 
@@ -119,8 +121,7 @@ Buttons expose semantic `data-event` hooks. The small event adapter dispatches a
 - `maps_click`
 - `language_change`
 - `reviews_click`
-- `tour_operator_link_click` (includes `language: en`, `th` or `zh`)
-- `tour_operator_enquiry`
+- `tour_operator_request` (navigation to the demo request page; no form values)
 
 No analytics vendor or production account is connected.
 

@@ -26,15 +26,13 @@ function button(href, label, kind = 'primary', event = '', external = false) {
   return `<a class="button button--${kind}" href="${href}"${event ? ` data-event="${event}"` : ''}${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}<span aria-hidden="true">→</span></a>`;
 }
 
-function languageMenu(lang, route, c) {
+function languageMenu(lang, route, c, languages = ['en', 'th', 'zh', 'ar', 'ru']) {
+  const labels = { en: 'English', th: 'ไทย', zh: '简体中文', ar: 'العربية', ru: 'Русский' };
+  const codes = { en: 'en', th: 'th', zh: 'zh-CN', ar: 'ar', ru: 'ru' };
   return `<div class="language" data-language>
     <button class="language__button" type="button" aria-label="${c.language}: ${lang === 'ar' ? c.arabic : lang === 'ru' ? c.russian : local(lang,c.english,c.thai,c.chinese)}" aria-expanded="false" aria-controls="language-menu">${lang === 'ar' ? 'AR' : lang === 'ru' ? 'RU' : local(lang,'EN','TH','ZH')}<span aria-hidden="true">⌄</span></button>
     <div class="language__menu" id="language-menu" hidden>
-      <a href="${url('en', route)}" hreflang="en" lang="en" data-event="language_change"${lang === 'en' ? ' aria-current="true"' : ''}>English</a>
-      <a href="${url('th', route)}" hreflang="th" lang="th" data-event="language_change"${lang === 'th' ? ' aria-current="true"' : ''}>ไทย</a>
-      <a href="${url('zh', route)}" hreflang="zh-CN" lang="zh-CN" data-event="language_change"${lang === 'zh' ? ' aria-current="true"' : ''}>简体中文</a>
-      <a href="${url('ar', route)}" hreflang="ar" lang="ar" dir="rtl" data-event="language_change"${lang === 'ar' ? ' aria-current="true"' : ''}>العربية</a>
-      <a href="${url('ru', route)}" hreflang="ru" lang="ru" data-event="language_change"${lang === 'ru' ? ' aria-current="true"' : ''}>Русский</a>
+      ${languages.map(code => `<a href="${url(code, route)}" hreflang="${codes[code]}" lang="${codes[code]}"${code === 'ar' ? ' dir="rtl"' : ''} data-event="language_change"${lang === code ? ' aria-current="true"' : ''}>${labels[code]}</a>`).join('')}
     </div>
   </div>`;
 }
@@ -48,6 +46,11 @@ function socialFooter(c) {
   return `<div class="footer-social"><h2>${c.followUs}</h2><div class="footer-social__links">${socialLinks.map(item => `<a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(`${item.name}, ${c.opensNewTab}`)}"><img src="${asset(`icons/${item.icon}`)}" width="24" height="24" alt="" aria-hidden="true"></a>`).join('')}</div></div>`;
 }
 
+function operatorFooter(lang) {
+  if (!tourOperators.languages.includes(lang)) return '';
+  return `<a class="footer-operator-link" href="${url(lang,tourOperators.route)}">${esc(tourOperators.pages[lang].title)}</a>`;
+}
+
 function layout(lang, page, title, description, content, routeOverride = null, options = {}) {
   const c = copy[lang];
   const whatsappContactLabel = local(lang, 'Contact us with WhatsApp', 'ติดต่อเราทาง WhatsApp', '通过 WhatsApp 联系我们');
@@ -55,7 +58,8 @@ function layout(lang, page, title, description, content, routeOverride = null, o
   const navHtml = nav.slice(0, 6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
   const moreHtml = nav.slice(6).map(([id, href, label]) => `<a href="${url(lang, href)}"${id === page ? ' aria-current="page"' : ''}>${value(label, lang)}</a>`).join('');
   const socialMeta = options.ogType ? `<meta property="og:type" content="${esc(options.ogType)}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">${options.publishedTime ? `<meta property="article:published_time" content="${esc(options.publishedTime)}">` : ''}` : '';
-  const languageAlternates = `<link rel="alternate" hreflang="en" href="${url('en', route)}"><link rel="alternate" hreflang="th" href="${url('th', route)}"><link rel="alternate" hreflang="zh-CN" href="${url('zh', route)}"><link rel="alternate" hreflang="ar" href="${url('ar', route)}"><link rel="alternate" hreflang="ru" href="${url('ru', route)}">`;
+  const languages = options.languages || ['en', 'th', 'zh', 'ar', 'ru'];
+  const languageAlternates = languages.map(code => `<link rel="alternate" hreflang="${code === 'zh' ? 'zh-CN' : code}" href="${url(code, route)}">`).join('');
   return `<!doctype html>
 <html lang="${lang === 'zh' ? 'zh-CN' : lang}"${lang === 'ar' ? ' dir="rtl"' : ''}>
 <head>
@@ -72,10 +76,10 @@ function layout(lang, page, title, description, content, routeOverride = null, o
     <a class="brand" href="${url(lang)}" aria-label="Phuket Shooters ${value(business.descriptor,lang)}"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><i>${c.menu}</i></button>
     <nav class="site-nav" id="site-nav" aria-label="${c.menu}">${navHtml}<div class="nav-more"><button type="button" aria-expanded="false">${local(lang,'More','เพิ่มเติม','更多')}<span aria-hidden="true">⌄</span></button><div>${moreHtml}</div></div></nav>
-    ${languageMenu(lang, route, c)}
+    ${languageMenu(lang, route, c, languages)}
   </header>
   <main id="main">${content}</main>
-  <footer class="site-footer">${affiliationsFooter(lang)}<div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div>${socialFooter(c)}</div><div><h2>${c.footerExplore}</h2>${nav.map(x=>`<a href="${url(lang,x[1])}">${x[0] === 'team' && lang === 'en' ? 'The Team' : value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
+  <footer class="site-footer">${affiliationsFooter(lang)}<div class="footer-grid"><div><div class="brand brand--footer"><img class="brand__logo" src="${asset('images/logo-header.png')}" alt=""><span><b>Phuket Shooters</b><small>${value(business.descriptor,lang)}</small></span></div>${socialFooter(c)}${operatorFooter(lang)}</div><div><h2>${c.footerExplore}</h2>${nav.map(x=>`<a href="${url(lang,x[1])}">${x[0] === 'team' && lang === 'en' ? 'The Team' : value(x[2],lang)}</a>`).join('')}</div><div><h2>${c.footerVisit}</h2><p>${value(business.hours,lang)}<br>${value(business.address,lang)}</p><a href="tel:${business.phoneHref}" data-event="phone_click">${business.phoneDisplay}</a><a href="mailto:${business.email}">${business.email}</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} Phuket Shooters</span><a href="${url(lang,'range-rules')}">${value(nav.find(x=>x[0]==='rules')[2],lang)}</a></div></footer>
   <a class="whatsapp-float" href="${business.whatsapp}" target="_blank" rel="noopener noreferrer" data-event="whatsapp_click" aria-label="${whatsappContactLabel}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span class="whatsapp-float__tooltip" aria-hidden="true">${whatsappContactLabel}</span></a>
   <script src="${asset('js/site.js')}" defer></script>
 </body></html>`;
@@ -109,15 +113,52 @@ function tourOperatorStrip(lang) {
 
 function tourOperatorPage(lang) {
   const c = tourOperators.pages[lang];
-  return `${pageHeader('Phuket Shooters',esc(c.title),esc(c.intro))}<section class="section wrap tour-operator-page"><div class="tour-operator-page__card"><p class="eyebrow">${esc(c.notice)}</p><p>${esc(c.body)}</p>${button(business.whatsapp,esc(c.contact),'primary','tour_operator_enquiry',true)}</div><nav class="tour-operator-page__languages" aria-label="${local(lang,'Choose a language','เลือกภาษา','选择语言')}">${tourOperators.links.map(link => `<a href="${url(link.lang,tourOperators.route)}" lang="${link.lang === 'zh' ? 'zh-CN' : link.lang}" hreflang="${link.lang === 'zh' ? 'zh-CN' : link.lang}"${link.lang === lang ? ' aria-current="page"' : ''}>${link.label}</a>`).join('')}</nav></section>`;
+  const requestUrl = url(lang,tourOperators.requestRoute);
+  return `${pageHeader('Phuket Shooters',esc(c.title),esc(c.intro),`<div class="contact-actions">${button(requestUrl,esc(c.requestCta),'primary','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.call),'outline','phone_click')}</div>`)}
+    <section class="section wrap operator-overview"><div class="operator-summary"><article><span>${esc(c.parkingLabel)}</span><strong>${esc(c.parkingFigure)}</strong></article><article><span>${esc(c.durationLabel)}</span><strong>${esc(c.durationFigure)}</strong><p>${esc(c.durationText)}</p></article></div><p class="operator-draft">${esc(c.draftNotice)}</p></section>
+    <section class="section section--soft"><div class="wrap operator-split"><div><p class="eyebrow">01</p><h2>${esc(c.planningTitle)}</h2><p>${esc(c.planningText)}</p><h3>${esc(c.arrivalTitle)}</h3><p>${esc(c.arrivalText)}</p>${button(business.map,esc(c.directions),'outline','maps_click',true)}</div><img src="${asset('images/photo15.jpeg')}" width="900" height="675" loading="lazy" alt="${esc(c.photoAlt)}"></div></section>
+    <section class="section wrap operator-process"><p class="eyebrow">02</p><h2>${esc(c.processTitle)}</h2><ol>${c.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol></section>
+    <section class="cta"><div><p class="eyebrow">03</p><h2>${esc(c.paymentTitle)}</h2><p>${esc(c.paymentText)}</p></div><div class="actions">${button(requestUrl,esc(c.requestCta),'light','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.paymentCta),'ghost','phone_click')}</div></section>`;
+}
+
+function groupRequestField(c, name, type = 'text', required = false, extra = '') {
+  const optional = required ? '' : `<small>${esc(c.optional)}</small>`;
+  const label = esc(c.fields[name]);
+  const control = name === 'questions'
+    ? `<textarea id="group-${name}" name="${name}" rows="4" maxlength="1000" ${extra}></textarea>`
+    : `<input id="group-${name}" name="${name}" type="${type}" ${required ? 'required' : ''} ${extra}>`;
+  return `<div class="group-field"><label for="group-${name}">${label} ${optional}</label>${control}<span class="group-field__error" id="group-${name}-error" hidden></span></div>`;
+}
+
+function groupRequestPage(lang) {
+  const c = tourOperators.pages[lang];
+  const back = url(lang,tourOperators.route);
+  const fields = [
+    groupRequestField(c,'company','text',false,'autocomplete="organization" maxlength="120"'),
+    groupRequestField(c,'name','text',true,'autocomplete="name" maxlength="120"'),
+    groupRequestField(c,'email','email',true,'autocomplete="email" maxlength="254"'),
+    groupRequestField(c,'phone','tel',false,'autocomplete="tel" maxlength="40"'),
+    groupRequestField(c,'date','date',true),
+    groupRequestField(c,'time','time'),
+    groupRequestField(c,'visitors','number',true,'min="1" step="1" inputmode="numeric"'),
+    groupRequestField(c,'coaches','number',false,'min="0" step="1" inputmode="numeric"'),
+    groupRequestField(c,'activities','text',false,'maxlength="200"'),
+    groupRequestField(c,'questions')
+  ];
+  const messages = c.errors;
+  return `<section class="page-hero"><div class="wrap"><a class="operator-back" href="${back}">← ${esc(c.back)}</a><p class="eyebrow">Phuket Shooters</p><h1>${esc(c.requestTitle)}</h1><p class="lede">${esc(c.requestIntro)}</p></div></section>
+    <section class="section wrap group-request-layout"><div class="group-request-intro"><p class="operator-draft">${esc(c.demoNotice)}</p><p>${esc(c.timeHelp)}</p><div class="group-request-contact">${button(`tel:${business.phoneHref}`,esc(c.call),'outline','phone_click')}${button(business.whatsapp,copy[lang].whatsapp,'outline','whatsapp_click',true)}</div></div>
+    <form class="group-request-form" data-demo-group-form data-locale="${lang === 'zh' ? 'zh-CN' : lang === 'th' ? 'th-TH' : 'en-GB'}" data-messages="${esc(JSON.stringify(messages))}" novalidate><div class="group-request-form__grid">${fields.join('')}</div><div class="group-error-summary" role="alert" tabindex="-1" hidden></div><button class="button button--primary" type="button" data-preview-group>${esc(c.previewAction)}<span aria-hidden="true">→</span></button></form>
+    <div class="group-preview" data-group-preview tabindex="-1" hidden><p class="eyebrow">${esc(c.demoNotice)}</p><h2>${esc(c.previewTitle)}</h2><p>${esc(c.previewText)}</p><dl><div><dt>${esc(c.dateSummary)}</dt><dd data-preview-date></dd></div><div data-preview-time-wrap hidden><dt>${esc(c.timeSummary)}</dt><dd data-preview-time></dd></div><div><dt>${esc(c.visitorSummary)}</dt><dd data-preview-visitors></dd></div><div><dt>${esc(c.coachSummary)}</dt><dd data-preview-coaches></dd></div></dl><button class="button button--outline" type="button" data-edit-group>${esc(c.editAction)}</button></div></section>`;
 }
 
 function home(lang) {
   const c = copy[lang];
   const visitPool = visitImages.map(image => ({ src: asset(`images/${image.file}`), alt: value(image.alt,lang) }));
+  const showTourOperatorStrip = false; // Retain the strip for a future homepage test.
   return `<section class="home-hero"><img src="${asset('images/hero-instructors.jpg')}" alt="${local(lang,'Instructors supervising customers on the indoor shooting range','ผู้สอนดูแลลูกค้าในสนามยิงปืนในร่ม','教练在室内靶场指导访客')}" fetchpriority="high"><div class="home-hero__shade"></div><div class="home-hero__content"><p class="eyebrow">${local(lang,'Chalong · Phuket','Chalong · Phuket','查龙 · 普吉')}</p><h1>${c.homeTitle}</h1><p>${c.homeIntro}</p><div class="actions">${button(url(lang,'prices'),c.pricesCta,'primary','view_prices')}${button(url(lang,'book'),c.bookCta,'light','begin_booking')}</div></div><div class="hero-facts"><span><b>09:00–18:00</b>${local(lang,'Daily','ทุกวัน','每天')}</span><span><b>25m</b>${local(lang,'Main range','สนามหลัก','主靶场')}</span><span><b>12</b>${local(lang,'Shooting bays','ช่องยิง','射击位')}</span></div></section>
   <aside class="reviews-bar" aria-label="${c.reviewsLabel}"><div class="reviews-bar__inner"><div class="reviews-bar__source"><span class="google-g" aria-hidden="true">G</span><strong>${c.reviewsLabel}</strong></div><div class="reviews-bar__rating"><b>${business.reviews.rating}</b><span class="stars" aria-label="${business.reviews.rating} ${local(lang,'out of 5','จาก 5','分（满分 5 分）')}">★★★★★</span><span>${business.reviews.count} ${c.reviewsCount}</span></div><a href="${business.reviews.url}" data-event="reviews_click" rel="noopener">${c.reviewsLink}<span aria-hidden="true">↗</span></a></div></aside>
-  ${tourOperatorStrip(lang)}
+  ${showTourOperatorStrip ? tourOperatorStrip(lang) : ''}
   <section class="section wrap"><div class="section-heading"><p class="eyebrow">${c.experiences}</p><h2>${local(lang,'Ways to enjoy','หลายวิธีในการเข้าร่วม','多种体验方式')}</h2></div><div class="experience-grid"><article class="feature feature--image"><img src="${asset('images/hero-shotgun.jpg')}" loading="lazy" alt="${local(lang,'Customer using a shotgun under supervision','ลูกค้าใช้ปืนลูกซองภายใต้การดูแล','访客在指导下使用霰弹枪')}"><div><span>01</span><h3>${c.firearms}</h3><p>${c.firearmsText}</p>${button(url(lang,'prices'),c.pricesCta,'text','view_prices')}</div></article><article class="feature"><span>02</span><h3>${c.alternatives}</h3><p>${c.alternativesText}</p>${button(url(lang,'prices'),c.pricesCta,'text','view_prices')}</article><article class="feature feature--red"><span>03</span><h3>${c.course}</h3><p>${c.courseText}</p>${button(url(lang,'courses'),local(lang,'Explore the course','ดูหลักสูตร','了解课程'),'text','select_course')}</article></div></section>
   <section class="section section--ink visit-section"><div class="wrap visit-layout"><div><div class="section-heading"><p class="eyebrow">${c.practical}</p><h2>${local(lang,'Everything you need to arrive prepared','ข้อมูลที่คุณต้องรู้ก่อนมา','到访前须知')}</h2></div><div class="info-grid"><article><i>01</i><h3>${c.safety}</h3><p>${c.safetyText}</p></article><article><i>02</i><h3>${c.facility}</h3><p>${c.facilityText}</p></article><article><i>03</i><h3>${c.noBooking}</h3><p>${c.noBookingText}</p></article><article><i>04</i><h3>${c.identification}</h3><p>${c.identificationText}</p><a class="info-link" href="${url(lang,'range-rules')}">${c.rulesTitle} →</a></article></div></div><figure class="visit-photo"><img data-visit-image data-image-pool="${esc(JSON.stringify(visitPool))}" width="1200" height="900" loading="lazy" alt=""><noscript><img src="${visitPool[0].src}" width="1200" height="900" loading="lazy" alt="${esc(visitPool[0].alt)}"></noscript></figure></div></section>
   ${homeNews(lang)}
@@ -193,11 +234,15 @@ for(const lang of ['en','th','zh','ar','ru']) for(const item of newsItems){
   const route=`news-events/${item.slug}`; const target=path.join(out,lang==='en'?'':lang,route,'index.html'); fs.mkdirSync(path.dirname(target),{recursive:true});
   fs.writeFileSync(target,layout(lang,'news',value(item.title,lang),value(item.metaDescription,lang),newsArticlePage(lang,item),route,{ogType:'article',publishedTime:item.date}));
 }
-for(const lang of ['en','th','zh','ar','ru']) {
+for(const lang of tourOperators.languages) {
   const route=tourOperators.route;
   const target=path.join(out,lang==='en'?'':lang,route,'index.html');
   const content=tourOperators.pages[lang];
   fs.mkdirSync(path.dirname(target),{recursive:true});
-  fs.writeFileSync(target,layout(lang,'tour-operators',content.title,content.intro,tourOperatorPage(lang),route));
+  fs.writeFileSync(target,layout(lang,'tour-operators',content.title,content.description,tourOperatorPage(lang),route,{languages:tourOperators.languages}));
+  const requestRoute=tourOperators.requestRoute;
+  const requestTarget=path.join(out,lang==='en'?'':lang,requestRoute,'index.html');
+  fs.mkdirSync(path.dirname(requestTarget),{recursive:true});
+  fs.writeFileSync(requestTarget,layout(lang,'group-booking',content.requestTitle,content.requestDescription,groupRequestPage(lang),requestRoute,{languages:tourOperators.languages}));
 }
-console.log(`Built ${Object.keys(renderers).length*5+newsItems.length*5+5} pages in ${path.relative(root,out)} with base "${base||'/'}"`);
+console.log(`Built ${Object.keys(renderers).length*5+newsItems.length*5+tourOperators.languages.length*2} pages in ${path.relative(root,out)} with base "${base||'/'}"`);
