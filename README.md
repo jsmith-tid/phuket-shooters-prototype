@@ -89,7 +89,7 @@ The group form is a **local-only interaction**: its button previews proposed vis
 
 ### Add a News and Events item
 
-Create `src/articles/<slug>/en.md` with frontmatter for the shared `slug`, `status`, `eventDate` and `heroImage`, plus English `category`, `summary` and `heroAlt`. Follow it with one `#` title and the article body. `status` is `demo` or `published`; demo items get a visible prototype label. Use `##` headings, paragraphs and `**bold**` for the supported article formatting. An optional `eventStartDate` shows a localised date range; `eventDate` is the ISO end date used for sorting. The homepage shows the single highest event date available in that language; each language's listing shows its available articles in descending event-date order. A future event therefore appears before a more recently reported past event.
+Create `src/articles/<slug>/en.md` with frontmatter for the shared `slug`, `status`, `eventDate` and `heroImage`, plus English `category`, `summary` and `heroAlt`. Follow it with one `#` title and the article body. `status` is `demo` or `published` for internal editorial tracking; neither value adds a visitor-facing badge. Use `##` headings, paragraphs and `**bold**` for the supported article formatting. An optional `eventStartDate` shows a localised date range; `eventDate` is the ISO end date used for sorting. The homepage shows the single highest event date available in that language; each language's listing shows its available articles in descending event-date order. A future event therefore appears before a more recently reported past event.
 
 For a translation, add `th.md`, `zh.md`, `ar.md` or `ru.md` in the same folder. Each needs localized `category`, `summary` and `heroAlt` frontmatter, a `#` title and translated body; set `translationStatus: draft` until reviewed, then `reviewed`. Only languages with an article file get a detail page or article-specific language-switcher/`hreflang` entry. Arabic article text follows the existing page-level right-to-left direction. The four current non-English sets are draft translations, not fluent-reviewer-approved copy.
 
@@ -107,7 +107,7 @@ The Courses page also includes the supplied competition-exercise video as a nati
 
 The form uses normal, labelled HTML fields and native validation. Submission is intercepted locally and displays:
 
-> Prototype only — no booking has been submitted.
+> No enquiry has been sent. Contact Phuket Shooters by WhatsApp or phone to make arrangements.
 
 No network request is made and no customer data is stored. A production backend can later be attached to the existing form without redesigning it.
 

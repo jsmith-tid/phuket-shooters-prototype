@@ -23,11 +23,11 @@ const forwardArrow = lang => lang === 'ar' ? '←' : '→';
 const newsUrl = (lang, item) => url(lang, `news-events/${item.slug}`);
 const newsImage = image => asset(`images/${image}`);
 const newsLabels = {
-  en: { eventDate: 'Event date', draft: '', demo: 'Demo article — details are for prototype testing', image: 'Illustrative photo', imageNote: 'Illustrative Phuket Shooters photo, not from the event described.' },
-  th: { eventDate: 'วันที่จัดงาน', draft: 'ฉบับแปลร่าง — ยังไม่ได้ตรวจทานโดยผู้เชี่ยวชาญภาษา', demo: 'บทความสาธิต — รายละเอียดใช้สำหรับทดสอบต้นแบบ', image: 'ภาพประกอบ', imageNote: 'ภาพประกอบจาก Phuket Shooters ไม่ใช่ภาพจากงานที่กล่าวถึง' },
-  zh: { eventDate: '活动日期', draft: '翻译草稿 — 尚未经母语者审校', demo: '演示文章 — 内容仅用于原型测试', image: '示意图片', imageNote: 'Phuket Shooters 的示意图片，并非该活动现场照片。' },
-  ar: { eventDate: 'تاريخ الفعالية', draft: 'ترجمة أولية — لم يراجعها متحدث أصلي', demo: 'مقال تجريبي — التفاصيل لاختبار النموذج', image: 'صورة توضيحية', imageNote: 'صورة توضيحية من Phuket Shooters، وليست من الفعالية المذكورة.' },
-  ru: { eventDate: 'Дата события', draft: 'Черновой перевод — без проверки носителем языка', demo: 'Демонстрационная статья — сведения для проверки прототипа', image: 'Иллюстративное фото', imageNote: 'Иллюстративное фото Phuket Shooters, не с описываемого события.' }
+  en: { eventDate: 'Event date', imageNote: 'Phuket Shooters photo, not from the event described.' },
+  th: { eventDate: 'วันที่จัดงาน', imageNote: 'ภาพจาก Phuket Shooters ไม่ใช่ภาพจากงานที่กล่าวถึง' },
+  zh: { eventDate: '活动日期', imageNote: 'Phuket Shooters 的照片，并非该活动现场照片。' },
+  ar: { eventDate: 'تاريخ الفعالية', imageNote: 'صورة من Phuket Shooters، وليست من الفعالية المذكورة.' },
+  ru: { eventDate: 'Дата события', imageNote: 'Фото Phuket Shooters, не с описываемого события.' }
 };
 const newsDate = (item, lang) => {
   if (!item.eventStartDate) return formatDate(item.eventDate, lang);
@@ -114,7 +114,7 @@ function newsCard(lang, item, featured = false) {
   const c = copy[lang];
   const labels = newsLabels[lang];
   const translation = item.translations[lang];
-  return `<article class="news-card${featured ? ' news-card--featured' : ''}"><a class="news-card__image" href="${newsUrl(lang,item)}"><img src="${newsImage(item.heroImage)}" loading="lazy" alt="${esc(translation.heroAlt)}"><span class="news-card__image-note">${labels.image}</span></a><div class="news-card__body"><p class="news-card__meta"><span>${esc(translation.category)}</span><span>${labels.eventDate}: <time datetime="${item.eventDate}">${newsDate(item,lang)}</time></span></p>${translation.translationStatus === 'draft' ? `<p class="news-translation-status">${labels.draft}</p>` : ''}${item.isDemo ? `<p class="news-placeholder">${labels.demo}</p>` : ''}<h3><a href="${newsUrl(lang,item)}">${esc(translation.title)}</a></h3><p>${esc(translation.summary)}</p><a class="news-card__link" href="${newsUrl(lang,item)}">${c.readMore} ${forwardArrow(lang)}</a></div></article>`;
+  return `<article class="news-card${featured ? ' news-card--featured' : ''}"><a class="news-card__image" href="${newsUrl(lang,item)}"><img src="${newsImage(item.heroImage)}" loading="lazy" alt="${esc(translation.heroAlt)}"></a><div class="news-card__body"><p class="news-card__meta"><span>${esc(translation.category)}</span><span>${labels.eventDate}: <time datetime="${item.eventDate}">${newsDate(item,lang)}</time></span></p><h3><a href="${newsUrl(lang,item)}">${esc(translation.title)}</a></h3><p>${esc(translation.summary)}</p><a class="news-card__link" href="${newsUrl(lang,item)}">${c.readMore} ${forwardArrow(lang)}</a></div></article>`;
 }
 
 function homeNews(lang) {
@@ -166,9 +166,9 @@ function groupRequestPage(lang) {
   ];
   const messages = c.errors;
   return `<section class="page-hero"><div class="wrap"><a class="operator-back" href="${back}">← ${esc(c.back)}</a><p class="eyebrow">Phuket Shooters</p><h1>${esc(c.requestTitle)}</h1><p class="lede">${esc(c.requestIntro)}</p></div></section>
-    <section class="section wrap group-request-layout"><div class="group-request-intro"><p class="operator-draft">${esc(c.demoNotice)}</p><p>${esc(c.timeHelp)}</p><div class="group-request-contact">${button(`tel:${business.phoneHref}`,esc(c.call),'outline','phone_click')}${button(business.whatsapp,copy[lang].whatsapp,'outline','whatsapp_click',true)}</div></div>
+    <section class="section wrap group-request-layout"><div class="group-request-intro"><p>${esc(c.timeHelp)}</p><div class="group-request-contact">${button(`tel:${business.phoneHref}`,esc(c.call),'outline','phone_click')}${button(business.whatsapp,copy[lang].whatsapp,'outline','whatsapp_click',true)}</div></div>
     <form class="group-request-form" data-demo-group-form data-locale="${lang === 'zh' ? 'zh-CN' : lang === 'th' ? 'th-TH' : 'en-GB'}" data-messages="${esc(JSON.stringify(messages))}" novalidate><div class="group-request-form__grid">${fields.join('')}</div><div class="group-error-summary" role="alert" tabindex="-1" hidden></div><button class="button button--primary" type="button" data-preview-group>${esc(c.previewAction)}<span aria-hidden="true">→</span></button></form>
-    <div class="group-preview" data-group-preview tabindex="-1" hidden><p class="eyebrow">${esc(c.demoNotice)}</p><h2>${esc(c.previewTitle)}</h2><p>${esc(c.previewText)}</p><dl><div><dt>${esc(c.dateSummary)}</dt><dd data-preview-date></dd></div><div data-preview-time-wrap hidden><dt>${esc(c.timeSummary)}</dt><dd data-preview-time></dd></div><div><dt>${esc(c.visitorSummary)}</dt><dd data-preview-visitors></dd></div><div><dt>${esc(c.coachSummary)}</dt><dd data-preview-coaches></dd></div></dl><button class="button button--outline" type="button" data-edit-group>${esc(c.editAction)}</button></div></section>`;
+    <div class="group-preview" data-group-preview tabindex="-1" hidden><h2>${esc(c.previewTitle)}</h2><p>${esc(c.previewText)}</p><dl><div><dt>${esc(c.dateSummary)}</dt><dd data-preview-date></dd></div><div data-preview-time-wrap hidden><dt>${esc(c.timeSummary)}</dt><dd data-preview-time></dd></div><div><dt>${esc(c.visitorSummary)}</dt><dd data-preview-visitors></dd></div><div><dt>${esc(c.coachSummary)}</dt><dd data-preview-coaches></dd></div></dl><button class="button button--outline" type="button" data-edit-group>${esc(c.editAction)}</button></div></section>`;
 }
 
 function home(lang) {
@@ -230,15 +230,15 @@ function newsArticlePage(lang,item) {
   const c=copy[lang];
   const labels = newsLabels[lang];
   const translation = item.translations[lang];
-  return `<article class="news-article"><header class="news-article__header wrap"><a class="news-back" href="${url(lang,'news-events')}">${lang==='ar'?'→':'←'} ${c.backToNews}</a>${translation.translationStatus === 'draft' ? `<p class="news-translation-status">${labels.draft}</p>` : ''}${item.isDemo ? `<p class="news-placeholder">${labels.demo}</p>` : ''}<p class="eyebrow">${esc(translation.category)}</p><h1>${esc(translation.title)}</h1><p class="news-event-date">${labels.eventDate}: <time datetime="${item.eventDate}">${newsDate(item,lang)}</time></p><p class="lede">${esc(translation.summary)}</p></header><figure class="news-article__hero wrap"><img src="${newsImage(item.heroImage)}" alt="${esc(translation.heroAlt)}"><figcaption>${labels.imageNote}</figcaption></figure><div class="news-article__body wrap narrow">${newsBody(translation.body)}</div></article>`;
+  return `<article class="news-article"><header class="news-article__header wrap"><a class="news-back" href="${url(lang,'news-events')}">${lang==='ar'?'→':'←'} ${c.backToNews}</a><p class="eyebrow">${esc(translation.category)}</p><h1>${esc(translation.title)}</h1><p class="news-event-date">${labels.eventDate}: <time datetime="${item.eventDate}">${newsDate(item,lang)}</time></p><p class="lede">${esc(translation.summary)}</p></header><figure class="news-article__hero wrap"><img src="${newsImage(item.heroImage)}" alt="${esc(translation.heroAlt)}"><figcaption>${labels.imageNote}</figcaption></figure><div class="news-article__body wrap narrow">${newsBody(translation.body)}</div></article>`;
 }
 
 const renderers={home,prices:pricesPage,book:bookPage,courses:coursesPage,news:newsPage,team:teamPage,rules:rulesPage,'find-us':findPage,gallery:galleryPage};
 const metadata={
- home:['Shooting range in Phuket','A clearer guide to Phuket Shooters range, activities, prices and visitor information.'], prices:['Range prices','Current individual activity and package prices at Phuket Shooters.'], book:['Booking and enquiries','Prototype booking and enquiry flow for Phuket Shooters.'], courses:['IDPA course','Three-day IDPA course information and timetable at Phuket Shooters.'], news:['News and Events','News, events and announcements from Phuket Shooters.'], team:['Meet the team','Meet the instructors, safety officers and customer service team at Phuket Shooters.'], rules:['Range rules','Controlled range safety and visitor rules for Phuket Shooters.'], 'find-us':['Find us','Address, opening hours and contact details for Phuket Shooters in Chalong.'], gallery:['Gallery','A curated gallery of training and visitor experiences at Phuket Shooters.']
+ home:['Shooting range in Phuket','A clearer guide to Phuket Shooters range, activities, prices and visitor information.'], prices:['Range prices','Current individual activity and package prices at Phuket Shooters.'], book:['Booking and enquiries','Booking and visit enquiries for Phuket Shooters.'], courses:['IDPA course','Three-day IDPA course information and timetable at Phuket Shooters.'], news:['News and Events','News, events and announcements from Phuket Shooters.'], team:['Meet the team','Meet the instructors, safety officers and customer service team at Phuket Shooters.'], rules:['Range rules','Controlled range safety and visitor rules for Phuket Shooters.'], 'find-us':['Find us','Address, opening hours and contact details for Phuket Shooters in Chalong.'], gallery:['Gallery','A curated gallery of training and visitor experiences at Phuket Shooters.']
 };
 const chineseMetadata={
- home:['普吉射击靶场','了解 Phuket Shooters 的活动、价格及到访信息。'], prices:['靶场价格','Phuket Shooters 的单项活动和套餐价格。'], book:['预约与咨询','向 Phuket Shooters 咨询到访事宜的演示表单。'], courses:['IDPA 课程','Phuket Shooters 三天 IDPA 课程信息及时间表。'], news:['新闻与活动','Phuket Shooters 的新闻、活动及公告。'], team:['认识团队','认识 Phuket Shooters 的教练、安全人员及客户服务团队。'], rules:['靶场规则','Phuket Shooters 的访客及安全规则。'], 'find-us':['如何找到我们','普吉查龙 Phuket Shooters 的地址、营业时间及联系方式。'], gallery:['相册','Phuket Shooters 的训练及访客体验照片。']
+ home:['普吉射击靶场','了解 Phuket Shooters 的活动、价格及到访信息。'], prices:['靶场价格','Phuket Shooters 的单项活动和套餐价格。'], book:['预约与咨询','向 Phuket Shooters 咨询到访事宜。'], courses:['IDPA 课程','Phuket Shooters 三天 IDPA 课程信息及时间表。'], news:['新闻与活动','Phuket Shooters 的新闻、活动及公告。'], team:['认识团队','认识 Phuket Shooters 的教练、安全人员及客户服务团队。'], rules:['靶场规则','Phuket Shooters 的访客及安全规则。'], 'find-us':['如何找到我们','普吉查龙 Phuket Shooters 的地址、营业时间及联系方式。'], gallery:['相册','Phuket Shooters 的训练及访客体验照片。']
 };
 const arabicMetadata = arabic.metadata;
 const russianMetadata = russian.metadata;

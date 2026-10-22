@@ -11,11 +11,17 @@ for (const lang of languages) {
   const expected = newsItems.filter(item => item.translations[lang]).sort((a, b) => b.eventDate.localeCompare(a.eventDate)).map(item => item.slug);
   const prefix = lang === 'en' ? '' : `${lang}/`;
   const listing = fs.readFileSync(path.join(dist, prefix, 'news-events/index.html'), 'utf8');
+  if (listing.includes('class="news-placeholder"') || listing.includes('class="news-translation-status"')) {
+    failures.push(`${lang}: editorial status is visible on the listing`);
+  }
   const paths = [...listing.matchAll(/<h3><a href="[^"]*\/news-events\/([^/]+)\/"/g)].map(match => match[1]);
   if (paths.join('|') !== expected.join('|')) failures.push(`${lang}: listing is not in descending event-date order`);
 
   const homepage = fs.readFileSync(path.join(dist, prefix, 'index.html'), 'utf8');
   const homeNews = homepage.match(/<section class="section section--soft home-news">[\s\S]*?<\/section>/)?.[0] || '';
+  if (homeNews.includes('class="news-placeholder"') || homeNews.includes('class="news-translation-status"')) {
+    failures.push(`${lang}: editorial status is visible on the homepage`);
+  }
   if (!homeNews.includes(`/news-events/${expected[0]}/`) || (homeNews.match(/class="news-card news-card--featured"/g) || []).length !== 1) {
     failures.push(`${lang}: homepage does not show just the most recent event`);
   }
@@ -38,8 +44,9 @@ for (const lang of languages) {
       failures.push(`${lang}/${item.slug}: localized Markdown heading missing`);
     }
     if (article.includes('article:published_time')) failures.push(`${lang}/${item.slug}: event date incorrectly marked as publication date`);
-    if (item.isDemo && !article.includes('class="news-placeholder"')) failures.push(`${lang}/${item.slug}: demo label missing`);
-    if (translation.translationStatus === 'draft' && !article.includes('class="news-translation-status"')) failures.push(`${lang}/${item.slug}: draft-translation label missing`);
+    if (article.includes('class="news-placeholder"') || article.includes('class="news-translation-status"')) {
+      failures.push(`${lang}/${item.slug}: editorial status is visible to visitors`);
+    }
     const alternates = [...article.matchAll(/<link rel="alternate" hreflang="([^"]+)"/g)].map(match => match[1]);
     if (alternates.length !== Object.keys(item.translations).length) failures.push(`${lang}/${item.slug}: language alternates do not match available translations`);
   }
@@ -49,4 +56,4 @@ if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
 }
-console.log(`Checked ${newsItems.length} Markdown articles across ${languages.length} languages: order, homepage, translated pages and draft labels OK.`);
+console.log(`Checked ${newsItems.length} Markdown articles across ${languages.length} languages: order, homepage, translated pages and editorial labels OK.`);
