@@ -17,10 +17,26 @@ const url = (lang, route = '') => `${base}/${lang === 'en' ? '' : `${lang}/`}${r
 const asset = file => `${base}/assets/${file}`;
 const money = n => new Intl.NumberFormat('en-US').format(n);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const orderedNewsItems = () => [...newsItems].sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+const orderedNewsItems = lang => newsItems.filter(item => item.translations[lang]).sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
 const formatDate = (date, lang) => date ? new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : lang === 'zh' ? 'zh-CN' : lang === 'ar' ? 'ar-u-nu-latn' : lang === 'ru' ? 'ru-RU' : 'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${date}T00:00:00Z`)) : '';
 const forwardArrow = lang => lang === 'ar' ? '←' : '→';
 const newsUrl = (lang, item) => url(lang, `news-events/${item.slug}`);
+const newsImage = image => asset(`images/${image}`);
+const newsLabels = {
+  en: { eventDate: 'Event date', draft: '', demo: 'Demo article — details are for prototype testing', image: 'Illustrative photo', imageNote: 'Illustrative Phuket Shooters photo, not from the event described.' },
+  th: { eventDate: 'วันที่จัดงาน', draft: 'ฉบับแปลร่าง — ยังไม่ได้ตรวจทานโดยผู้เชี่ยวชาญภาษา', demo: 'บทความสาธิต — รายละเอียดใช้สำหรับทดสอบต้นแบบ', image: 'ภาพประกอบ', imageNote: 'ภาพประกอบจาก Phuket Shooters ไม่ใช่ภาพจากงานที่กล่าวถึง' },
+  zh: { eventDate: '活动日期', draft: '翻译草稿 — 尚未经母语者审校', demo: '演示文章 — 内容仅用于原型测试', image: '示意图片', imageNote: 'Phuket Shooters 的示意图片，并非该活动现场照片。' },
+  ar: { eventDate: 'تاريخ الفعالية', draft: 'ترجمة أولية — لم يراجعها متحدث أصلي', demo: 'مقال تجريبي — التفاصيل لاختبار النموذج', image: 'صورة توضيحية', imageNote: 'صورة توضيحية من Phuket Shooters، وليست من الفعالية المذكورة.' },
+  ru: { eventDate: 'Дата события', draft: 'Черновой перевод — без проверки носителем языка', demo: 'Демонстрационная статья — сведения для проверки прототипа', image: 'Иллюстративное фото', imageNote: 'Иллюстративное фото Phuket Shooters, не с описываемого события.' }
+};
+const newsDate = (item, lang) => {
+  if (!item.eventStartDate) return formatDate(item.eventDate, lang);
+  const locale = { en: 'en-GB', th: 'th-TH', zh: 'zh-CN', ar: 'ar-u-nu-latn', ru: 'ru-RU' }[lang];
+  const formatter = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  return formatter.formatRange(new Date(`${item.eventStartDate}T00:00:00Z`), new Date(`${item.eventDate}T00:00:00Z`));
+};
+const newsInline = text => esc(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/  \n|\n/g, '<br>');
+const newsBody = blocks => blocks.map(block => block.type === 'heading' ? `<h2>${esc(block.text)}</h2>` : `<p>${newsInline(block.text)}</p>`).join('');
 
 function button(href, label, kind = 'primary', event = '', external = false) {
   return `<a class="button button--${kind}" href="${href}"${event ? ` data-event="${event}"` : ''}${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}<span aria-hidden="true">→</span></a>`;
@@ -96,13 +112,14 @@ function cta(lang, heading, text) {
 
 function newsCard(lang, item, featured = false) {
   const c = copy[lang];
-  const date = formatDate(item.date,lang);
-  return `<article class="news-card${featured ? ' news-card--featured' : ''}"><a class="news-card__image" href="${newsUrl(lang,item)}"><img src="${asset(`images/${item.heroImage}`)}" loading="lazy" alt="${esc(value(item.heroAlt,lang))}"></a><div class="news-card__body"><p class="news-card__meta"><span>${esc(value(item.category,lang))}</span>${date ? `<time datetime="${item.date}">${date}</time>` : ''}</p>${item.isPlaceholder ? `<p class="news-placeholder">${c.exampleContent}</p>` : ''}<h3><a href="${newsUrl(lang,item)}">${esc(value(item.title,lang))}</a></h3><p>${esc(value(item.summary,lang))}</p><a class="news-card__link" href="${newsUrl(lang,item)}">${c.readMore} ${forwardArrow(lang)}</a></div></article>`;
+  const labels = newsLabels[lang];
+  const translation = item.translations[lang];
+  return `<article class="news-card${featured ? ' news-card--featured' : ''}"><a class="news-card__image" href="${newsUrl(lang,item)}"><img src="${newsImage(item.heroImage)}" loading="lazy" alt="${esc(translation.heroAlt)}"><span class="news-card__image-note">${labels.image}</span></a><div class="news-card__body"><p class="news-card__meta"><span>${esc(translation.category)}</span><span>${labels.eventDate}: <time datetime="${item.eventDate}">${newsDate(item,lang)}</time></span></p>${translation.translationStatus === 'draft' ? `<p class="news-translation-status">${labels.draft}</p>` : ''}${item.isDemo ? `<p class="news-placeholder">${labels.demo}</p>` : ''}<h3><a href="${newsUrl(lang,item)}">${esc(translation.title)}</a></h3><p>${esc(translation.summary)}</p><a class="news-card__link" href="${newsUrl(lang,item)}">${c.readMore} ${forwardArrow(lang)}</a></div></article>`;
 }
 
 function homeNews(lang) {
   const c = copy[lang];
-  const latest = orderedNewsItems()[0];
+  const latest = orderedNewsItems(lang)[0];
   if(!latest) return '';
   return `<section class="section section--soft home-news"><div class="wrap"><div class="split-heading"><div><p class="eyebrow">${c.latestUpdate}</p><h2>${c.newsTitle}</h2></div><a class="news-all-link" href="${url(lang,'news-events')}">${c.viewAllNews} ${forwardArrow(lang)}</a></div>${newsCard(lang,latest,true)}</div></section>`;
 }
@@ -206,14 +223,14 @@ function galleryPage(lang) {
 
 function newsPage(lang) {
   const c=copy[lang];
-  return `${pageHeader('Phuket Shooters',c.newsTitle,c.newsIntro)}<section class="section wrap"><div class="news-list">${orderedNewsItems().map(item=>newsCard(lang,item)).join('')}</div></section>`;
+  return `${pageHeader('Phuket Shooters',c.newsTitle,c.newsIntro)}<section class="section wrap"><div class="news-list">${orderedNewsItems(lang).map(item=>newsCard(lang,item)).join('')}</div></section>`;
 }
 
 function newsArticlePage(lang,item) {
   const c=copy[lang];
-  const date=formatDate(item.date,lang);
-  const gallery=item.gallery||[];
-  return `<article class="news-article"><header class="news-article__header wrap"><a class="news-back" href="${url(lang,'news-events')}">${lang==='ar'?'→':'←'} ${c.backToNews}</a><p class="eyebrow">${esc(value(item.category,lang))}</p>${item.isPlaceholder?`<p class="news-placeholder">${c.exampleContent}</p>`:''}<h1>${esc(value(item.title,lang))}</h1>${date?`<time datetime="${item.date}">${date}</time>`:''}<p class="lede">${esc(value(item.summary,lang))}</p></header><figure class="news-article__hero wrap"><img src="${asset(`images/${item.heroImage}`)}" alt="${esc(value(item.heroAlt,lang))}"></figure><div class="news-article__body wrap narrow">${value(item.body,lang).map(paragraph=>`<p>${esc(paragraph)}</p>`).join('')}${item.eventDate?`<p><strong>${local(lang,'Event date','วันที่จัดกิจกรรม','活动日期')}:</strong> <time datetime="${item.eventDate}">${formatDate(item.eventDate,lang)}</time></p>`:''}${item.cta?button(value(item.cta.url,lang),value(item.cta.label,lang),'primary','news_cta'):''}</div>${gallery.length?`<div class="news-article__gallery wrap">${gallery.map(image=>`<img src="${asset(`images/${image.file}`)}" loading="lazy" alt="${esc(value(image.alt,lang))}">`).join('')}</div>`:''}</article>`;
+  const labels = newsLabels[lang];
+  const translation = item.translations[lang];
+  return `<article class="news-article"><header class="news-article__header wrap"><a class="news-back" href="${url(lang,'news-events')}">${lang==='ar'?'→':'←'} ${c.backToNews}</a>${translation.translationStatus === 'draft' ? `<p class="news-translation-status">${labels.draft}</p>` : ''}${item.isDemo ? `<p class="news-placeholder">${labels.demo}</p>` : ''}<p class="eyebrow">${esc(translation.category)}</p><h1>${esc(translation.title)}</h1><p class="news-event-date">${labels.eventDate}: <time datetime="${item.eventDate}">${newsDate(item,lang)}</time></p><p class="lede">${esc(translation.summary)}</p></header><figure class="news-article__hero wrap"><img src="${newsImage(item.heroImage)}" alt="${esc(translation.heroAlt)}"><figcaption>${labels.imageNote}</figcaption></figure><div class="news-article__body wrap narrow">${newsBody(translation.body)}</div></article>`;
 }
 
 const renderers={home,prices:pricesPage,book:bookPage,courses:coursesPage,news:newsPage,team:teamPage,rules:rulesPage,'find-us':findPage,gallery:galleryPage};
@@ -232,9 +249,10 @@ for(const lang of ['en','th','zh','ar','ru']) for(const [page,renderer] of Objec
   const [title,desc]=lang==='ru'?russianMetadata[page]:lang==='ar'?arabicMetadata[page]:lang==='zh'?chineseMetadata[page]:metadata[page]; const localTitle=lang==='en'?title:copy[lang][page==='home'?'homeTitle':page==='find-us'?'findTitle':`${page}Title`]||title;
   fs.writeFileSync(target,layout(lang,page,localTitle,desc,renderer(lang)));
 }
-for(const lang of ['en','th','zh','ar','ru']) for(const item of newsItems){
+for(const lang of ['en','th','zh','ar','ru']) for(const item of orderedNewsItems(lang)){
   const route=`news-events/${item.slug}`; const target=path.join(out,lang==='en'?'':lang,route,'index.html'); fs.mkdirSync(path.dirname(target),{recursive:true});
-  fs.writeFileSync(target,layout(lang,'news',value(item.title,lang),value(item.metaDescription,lang),newsArticlePage(lang,item),route,{ogType:'article',publishedTime:item.date}));
+  const translation=item.translations[lang];
+  fs.writeFileSync(target,layout(lang,'news',translation.title,translation.summary,newsArticlePage(lang,item),route,{ogType:'article',languages:Object.keys(item.translations)}));
 }
 for(const lang of tourOperators.languages) {
   const route=tourOperators.route;
@@ -247,4 +265,4 @@ for(const lang of tourOperators.languages) {
   fs.mkdirSync(path.dirname(requestTarget),{recursive:true});
   fs.writeFileSync(requestTarget,layout(lang,'group-booking',content.requestTitle,content.requestDescription,groupRequestPage(lang),requestRoute,{languages:tourOperators.languages}));
 }
-console.log(`Built ${Object.keys(renderers).length*5+newsItems.length*5+tourOperators.languages.length*2} pages in ${path.relative(root,out)} with base "${base||'/'}"`);
+console.log(`Built ${Object.keys(renderers).length*5+newsItems.reduce((total,item)=>total+Object.keys(item.translations).length,0)+tourOperators.languages.length*2} pages in ${path.relative(root,out)} with base "${base||'/'}"`);

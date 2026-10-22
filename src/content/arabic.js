@@ -19,7 +19,7 @@ const copy = {
   rulesTitle: 'قواعد الميدان', rulesIntro: 'يجب على Phuket Shooters Association وPhuket Shooters Shooting Range الاحتفاظ بسجل لجميع مستخدمي الميدان للشرطة التايلاندية والمسؤولين الحكوميين والجهات ذات الصلة. يُطلب منك قراءة ما يلي بعناية والإقرار به.', controlled: 'محتوى يتعلق بالسلامة — مترجم من الموقع الإنجليزي الحالي، ويحتاج إلى مراجعة.',
   findTitle: 'كيف تصل إلينا', findIntro: 'معلومات عملية لزيارتك للميدان في تشالونغ.', address: 'العنوان', hours: 'ساعات العمل', contact: 'التواصل', nearby: 'معالم قريبة', landmark: 'نحن بالقرب من Phuket Dolphin Show وCrocodile Show Phuket and Mini Zoo وLion Land وCobra Show وJurafish.', mapNote: 'استخدم الخريطة التفاعلية أعلاه أو افتح الاتجاهات في خرائط Google.',
   galleryTitle: 'معرض الصور', galleryIntro: '',
-  newsTitle: 'الأخبار والفعاليات', newsIntro: 'ستُنشر هنا أخبار الميدان وفعالياته وتحديثاته.', latestUpdate: 'آخر تحديث', viewAllNews: 'عرض جميع الأخبار والفعاليات', readMore: 'اقرأ المزيد', backToNews: 'العودة إلى الأخبار والفعاليات', exampleContent: 'محتوى توضيحي — بانتظار نص معتمد',
+  newsTitle: 'الأخبار والفعاليات', newsIntro: 'مقالات تجريبية عن فعاليات رياضة الرماية في تايلاند.', latestUpdate: 'فعالية مختارة', viewAllNews: 'عرض جميع الأخبار والفعاليات', readMore: 'اقرأ المزيد', backToNews: 'العودة إلى الأخبار والفعاليات', exampleContent: 'محتوى توضيحي — بانتظار نص معتمد',
   footerExplore: 'استكشف', footerVisit: 'زرنا', followUs: 'تابعنا', opensNewTab: 'يفتح في علامة تبويب جديدة', reviewsLabel: 'تقييمات Google', reviewsCount: 'تقييمًا', reviewsLink: 'اقرأ التقييمات على Google',
   comingSoon: 'قريبًا', language: 'اللغة', english: 'English', thai: 'ไทย', chinese: '简体中文', arabic: 'العربية', russian: 'الروسية'
 };
@@ -92,13 +92,6 @@ const schedule = [
   'تطبيق الرماية في المراحل والتقييم الشامل', 'التطبيقات العملية للرماية في المراحل وحل المشكلات',
   'الغداء', 'التطبيق العملي وتقييم الحصول على اعتماد رامٍ في IDPA'
 ];
-const news = {
-  title: 'مثال: Action Air', category: 'مادة توضيحية',
-  summary: 'مثال توضيحي فقط — لم يُقدَّم بعد نص مقال أو تفاصيل فعالية معتمدة.',
-  body: ['توضح هذه الصفحة هيكل المقالات المستقبلية في قسم الأخبار والفعاليات.', 'لم تُقدَّم بعد نصوص أو تواريخ أو صور داعمة معتمدة لمقال عن Action Air. استبدل هذا المحتوى التوضيحي قبل الإطلاق الفعلي.'],
-  heroAlt: 'المقهى ومنطقة الزوار في Phuket Shooters',
-  metaDescription: 'مقال توضيحي في الأخبار والفعاليات بانتظار محتوى معتمد عن Action Air.'
-};
 const metadata = {
   home: ['ميدان رماية في فوكيت', 'دليل لأنشطة Phuket Shooters وأسعارها ومعلومات الزيارة.'],
   prices: ['أسعار الميدان', 'أسعار الأنشطة الفردية والباقات في Phuket Shooters.'],
@@ -135,4 +128,4 @@ const inline = {
   'out of 5': 'من 5', 'Contact us with WhatsApp': 'تواصل معنا عبر واتساب'
 };
 
-module.exports = { copy, business, nav, priceDetails, priceNames, packages, visitAlts, roles, bios, languages, rules, schedule, news, metadata, inline };
+module.exports = { copy, business, nav, priceDetails, priceNames, packages, visitAlts, roles, bios, languages, rules, schedule, metadata, inline };

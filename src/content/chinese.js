@@ -19,7 +19,7 @@ const copy = {
   rulesTitle: '靶场规则', rulesIntro: 'Phuket Shooters Association 和 Phuket Shooters Shooting Range 须为泰国警方、政府官员及相关机构记录所有靶场使用者的信息。请仔细阅读并确认以下内容。', controlled: '安全相关内容——根据现有英文网站翻译，待审核。',
   findTitle: '如何找到我们', findIntro: '前往查龙靶场的实用信息。', address: '地址', hours: '营业时间', contact: '联系方式', nearby: '附近地标', landmark: '我们靠近 Phuket Dolphin Show、Crocodile Show Phuket and Mini Zoo、Lion Land、Cobra Show 和 Jurafish。', mapNote: '使用上方互动地图，或在 Google 地图中打开导航。',
   galleryTitle: '相册', galleryIntro: '',
-  newsTitle: '新闻与活动', newsIntro: '靶场的新闻、活动和公告将在此发布。', latestUpdate: '最新动态', viewAllNews: '查看全部新闻与活动', readMore: '阅读更多', backToNews: '返回新闻与活动', exampleContent: '示例内容——等待批准的文案',
+  newsTitle: '新闻与活动', newsIntro: '关于泰国射击运动赛事的原型文章。', latestUpdate: '精选活动', viewAllNews: '查看全部新闻与活动', readMore: '阅读更多', backToNews: '返回新闻与活动', exampleContent: '示例内容——等待批准的文案',
   footerExplore: '探索', footerVisit: '到访', followUs: '关注我们', opensNewTab: '在新标签页中打开', reviewsLabel: 'Google 评价', reviewsCount: '条评价', reviewsLink: '在 Google 查看评价',
   comingSoon: '即将推出', language: '语言', english: 'English', thai: 'ไทย', chinese: '简体中文', arabic: '阿拉伯语', russian: '俄语'
 };
@@ -73,12 +73,4 @@ const schedule = [
   '签到', '移动射击与变换位置', '午餐', '关卡射击、规划与技能发展', '关卡射击应用与综合评估',
   '关卡射击实践与问题解决', '午餐', '实践应用及 IDPA 射手认证评估'
 ];
-const news = {
-  title: '示例：Action Air', category: '示例条目',
-  summary: '仅供占位演示——尚未提供获批的文章文案和活动详情。',
-  body: ['此页面展示未来新闻与活动文章的结构。', '尚未提供获批的 Action Air 文章文案、日期及配图。正式上线前请替换此占位内容。'],
-  heroAlt: 'Phuket Shooters 的咖啡厅及访客区域',
-  metaDescription: '等待获批 Action Air 内容的新闻与活动示例文章。'
-};
-
-module.exports = { copy, business, nav, priceDetails, visitAlts, roles, bios, rules, schedule, news };
+module.exports = { copy, business, nav, priceDetails, visitAlts, roles, bios, rules, schedule };

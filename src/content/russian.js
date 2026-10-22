@@ -19,7 +19,7 @@ const copy = {
   rulesTitle: 'Правила тира', rulesIntro: 'Phuket Shooters Association и Phuket Shooters Shooting Range обязаны вести учёт всех посетителей тира для полиции Таиланда, государственных органов и связанных организаций. Внимательно прочитайте следующие положения и подтвердите, что вы с ними ознакомились.', controlled: 'Материал по безопасности — перевод действующей англоязычной версии сайта, требующий проверки.',
   findTitle: 'Как нас найти', findIntro: 'Полезная информация для посещения тира в Чалонге.', address: 'Адрес', hours: 'Часы работы', contact: 'Контакты', nearby: 'Ориентиры поблизости', landmark: 'Мы находимся рядом с Phuket Dolphin Show, Crocodile Show Phuket and Mini Zoo, Lion Land, Cobra Show и Jurafish.', mapNote: 'Воспользуйтесь интерактивной картой выше или откройте маршрут в Google Картах.',
   galleryTitle: 'Галерея', galleryIntro: '',
-  newsTitle: 'Новости и события', newsIntro: 'Здесь будут публиковаться новости, события и объявления тира.', latestUpdate: 'Последнее обновление', viewAllNews: 'Все новости и события', readMore: 'Читать далее', backToNews: 'Назад к новостям и событиям', exampleContent: 'Пример материала — ожидается утверждённый текст',
+  newsTitle: 'Новости и события', newsIntro: 'Демонстрационные статьи о соревнованиях по стрелковому спорту в Таиланде.', latestUpdate: 'Избранное событие', viewAllNews: 'Все новости и события', readMore: 'Читать далее', backToNews: 'Назад к новостям и событиям', exampleContent: 'Пример материала — ожидается утверждённый текст',
   footerExplore: 'Разделы сайта', footerVisit: 'Посетите нас', followUs: 'Подписывайтесь', opensNewTab: 'откроется в новой вкладке', reviewsLabel: 'Отзывы в Google', reviewsCount: 'отзывов', reviewsLink: 'Читать отзывы в Google',
   comingSoon: 'Скоро', language: 'Язык', english: 'English', thai: 'ไทย', chinese: '简体中文', arabic: 'العربية', russian: 'Русский'
 };
@@ -99,13 +99,6 @@ const schedule = [
   'Применение навыков на этапах и комплексная оценка', 'Практическое применение навыков на этапах и решение задач',
   'Обед', 'Практическое применение навыков и аттестация стрелка IDPA'
 ];
-const news = {
-  title: 'Пример: Action Air', category: 'Пример материала',
-  summary: 'Это только пример: утверждённый текст статьи и сведения о мероприятии пока не предоставлены.',
-  body: ['Эта страница демонстрирует структуру будущих статей раздела «Новости и события».', 'Утверждённые текст, даты и иллюстрации для статьи об Action Air пока не предоставлены. Замените этот пример до запуска рабочего сайта.'],
-  heroAlt: 'Кафе и зона для гостей в Phuket Shooters',
-  metaDescription: 'Пример статьи в разделе новостей и событий в ожидании утверждённого материала об Action Air.'
-};
 const metadata = {
   home: ['Стрелковый тир на Пхукете', 'Занятия, цены и информация для гостей Phuket Shooters.'],
   prices: ['Цены в тире', 'Цены отдельных занятий и пакетов Phuket Shooters.'],
@@ -143,4 +136,4 @@ const inline = {
   'out of 5': 'из 5', 'Contact us with WhatsApp': 'Свяжитесь с нами в WhatsApp'
 };
 
-module.exports = { copy, business, nav, priceDetails, priceNames, packages, visitAlts, galleryAlts, roles, bios, languages, rules, schedule, news, metadata, inline };
+module.exports = { copy, business, nav, priceDetails, priceNames, packages, visitAlts, galleryAlts, roles, bios, languages, rules, schedule, metadata, inline };

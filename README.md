@@ -12,7 +12,7 @@ Requirements: Node.js 20 or newer. There are no third-party runtime or build dep
 npm run dev
 ```
 
-Open `http://localhost:8080`. To make a production-style build without starting the local server:
+Open `http://127.0.0.1:8080`. The preview server binds only to this computer. To make a production-style build without starting the local server:
 
 ```bash
 npm run build
@@ -25,10 +25,11 @@ Generated files are written to `dist/` and are not committed.
 
 - `src/content/site.js` — business details, navigation, prices, packages, staff and controlled range rules
 - `src/content/pages.js` — English/Thai interface copy and the IDPA timetable
-- `src/content/chinese.js` — draft Simplified Chinese page, shared and article translations
-- `src/content/arabic.js` — draft Modern Standard Arabic page, shared and article translations
-- `src/content/russian.js` — draft Russian page, shared and article translations
-- `src/content/news.js` — data-driven News and Events articles, metadata and optional galleries/CTAs
+- `src/content/chinese.js` — draft Simplified Chinese page and shared copy
+- `src/content/arabic.js` — draft Modern Standard Arabic page and shared copy
+- `src/content/russian.js` — draft Russian page and shared copy
+- `src/articles/<slug>/<language>.md` — News and Events article text and localized metadata (source only; not deployed as raw Markdown)
+- `src/content/news.js` — multilingual Markdown article loader and metadata validation
 - `src/content/tourOperators.js` — draft operator information and group-request preview copy in English, Thai and Simplified Chinese
 - `scripts/build.js` — dependency-free static generator and shared page templates
 - `public/assets/` — local CSS, JavaScript and images migrated from the live site
@@ -88,9 +89,11 @@ The group form is a **local-only interaction**: its button previews proposed vis
 
 ### Add a News and Events item
 
-Add an entry to `newsItems` in `src/content/news.js`. Each item supports a slug, title, publication date, category, summary, paragraph-based body, hero image, optional image gallery, optional event date, optional CTA and meta description. Listing, homepage-latest and individual article pages are generated automatically in all five languages; no page template changes are required. Add the Chinese, Arabic and Russian translations to the content data before publishing a new item.
+Create `src/articles/<slug>/en.md` with frontmatter for the shared `slug`, `status`, `eventDate` and `heroImage`, plus English `category`, `summary` and `heroAlt`. Follow it with one `#` title and the article body. `status` is `demo` or `published`; demo items get a visible prototype label. Use `##` headings, paragraphs and `**bold**` for the supported article formatting. An optional `eventStartDate` shows a localised date range; `eventDate` is the ISO end date used for sorting. The homepage shows the single highest event date available in that language; each language's listing shows its available articles in descending event-date order. A future event therefore appears before a more recently reported past event.
 
-Only add factual event copy and translations after approval. Keep `isPlaceholder: true` for examples or incomplete material and remove it when the item is approved for publication. The Chinese, Arabic and Russian Action Air items are translated placeholders, not factual event reports.
+For a translation, add `th.md`, `zh.md`, `ar.md` or `ru.md` in the same folder. Each needs localized `category`, `summary` and `heroAlt` frontmatter, a `#` title and translated body; set `translationStatus: draft` until reviewed, then `reviewed`. Only languages with an article file get a detail page or article-specific language-switcher/`hreflang` entry. Arabic article text follows the existing page-level right-to-left direction. The four current non-English sets are draft translations, not fluent-reviewer-approved copy.
+
+For an existing local image, set `heroImage` to its filename in `public/assets/images/`. New article images can go in `public/assets/images/articles/` and use `heroImage: articles/example.jpg`. The current four drafts reuse existing Phuket Shooters photos and label them as illustrative, not as photos of the described events. No publication dates have been supplied, so event dates are not emitted as article publication metadata. The drafts need factual, image and translation review before real publication. Markdown under `src/` is not copied to `dist/`, although it remains visible in the public GitHub repository.
 
 ## Images
 
