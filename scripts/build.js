@@ -85,8 +85,8 @@ function layout(lang, page, title, description, content, routeOverride = null, o
 </body></html>`;
 }
 
-function pageHeader(eyebrow, title, intro, aside = '') {
-  return `<section class="page-hero"><div class="wrap"><p class="eyebrow">${eyebrow}</p><div class="page-hero__grid"><div><h1>${title}</h1>${intro ? `<p class="lede">${intro}</p>` : ''}</div>${aside}</div></div></section>`;
+function pageHeader(eyebrow, title, intro, aside = '', afterIntro = '') {
+  return `<section class="page-hero"><div class="wrap"><p class="eyebrow">${eyebrow}</p><div class="page-hero__grid"><div><h1>${title}</h1>${intro ? `<p class="lede">${intro}</p>` : ''}${afterIntro}</div>${aside}</div></div></section>`;
 }
 
 function cta(lang, heading, text) {
@@ -114,9 +114,11 @@ function tourOperatorStrip(lang) {
 function tourOperatorPage(lang) {
   const c = tourOperators.pages[lang];
   const requestUrl = url(lang,tourOperators.requestRoute);
-  return `${pageHeader('Phuket Shooters',esc(c.title),esc(c.intro),`<div class="contact-actions">${button(requestUrl,esc(c.requestCta),'primary','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.call),'outline','phone_click')}</div>`)}
-    <section class="section wrap operator-overview"><div class="operator-summary"><article><span>${esc(c.parkingLabel)}</span><strong>${esc(c.parkingFigure)}</strong></article><article><span>${esc(c.durationLabel)}</span><strong>${esc(c.durationFigure)}</strong><p>${esc(c.durationText)}</p></article></div><p class="operator-draft">${esc(c.draftNotice)}</p></section>
-    <section class="section section--soft"><div class="wrap operator-split"><div><p class="eyebrow">01</p><h2>${esc(c.planningTitle)}</h2><p>${esc(c.planningText)}</p><h3>${esc(c.arrivalTitle)}</h3><p>${esc(c.arrivalText)}</p>${button(business.map,esc(c.directions),'outline','maps_click',true)}</div><img src="${asset('images/photo15.jpeg')}" width="900" height="675" loading="lazy" alt="${esc(c.photoAlt)}"></div></section>
+  const benefits = `<ul class="operator-benefits">${c.benefits.map(benefit => `<li>${esc(benefit)}</li>`).join('')}</ul>`;
+  return `${pageHeader('Phuket Shooters',esc(c.title),esc(c.intro),`<div class="contact-actions">${button(requestUrl,esc(c.requestCta),'primary','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.call),'outline','phone_click')}</div>`,benefits)}
+    <section class="section wrap operator-overview"><div class="operator-summary"><article><span>${esc(c.parkingLabel)}</span><strong>${esc(c.parkingFigure)}</strong></article><article><span>${esc(c.durationLabel)}</span><strong>${esc(c.durationFigure)}</strong><p>${esc(c.durationText)}</p></article></div></section>
+    <section class="section section--soft operator-arrival"><div class="wrap"><div class="operator-arrival__intro"><div><h2>${esc(c.arrivalTitle)}</h2><p>${esc(c.arrivalText)}</p></div>${button(business.map,esc(c.directions),'outline','maps_click',true)}</div><img src="${asset('images/587_0.jpg')}" width="1905" height="859" loading="lazy" alt="${esc(c.photoAlt)}"></div></section>
+    <section class="section wrap operator-planning"><p class="eyebrow">01</p><h2>${esc(c.planningTitle)}</h2><p>${esc(c.planningText)}</p></section>
     <section class="section wrap operator-process"><p class="eyebrow">02</p><h2>${esc(c.processTitle)}</h2><ol>${c.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol></section>
     <section class="cta"><div><p class="eyebrow">03</p><h2>${esc(c.paymentTitle)}</h2><p>${esc(c.paymentText)}</p></div><div class="actions">${button(requestUrl,esc(c.requestCta),'light','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.paymentCta),'ghost','phone_click')}</div></section>`;
 }
