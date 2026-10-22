@@ -3,3 +3,5 @@ node_modules/
 .tools/
 .DS_Store
 Thumbs.db
+.vscode/settings.json
+public/assets/images/PS-main-tours-English-mob.jpeg
