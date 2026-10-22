@@ -118,9 +118,9 @@ function tourOperatorPage(lang) {
   return `${pageHeader('Phuket Shooters',esc(c.title),esc(c.intro),`<div class="contact-actions">${button(requestUrl,esc(c.requestCta),'primary','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.call),'outline','phone_click')}</div>`,benefits)}
     <section class="section wrap operator-overview"><div class="operator-summary"><article><span>${esc(c.parkingLabel)}</span><strong>${esc(c.parkingFigure)}</strong></article><article><span>${esc(c.durationLabel)}</span><strong>${esc(c.durationFigure)}</strong><p>${esc(c.durationText)}</p></article></div></section>
     <section class="section section--soft operator-arrival"><div class="wrap"><div class="operator-arrival__intro"><div><h2>${esc(c.arrivalTitle)}</h2><p>${esc(c.arrivalText)}</p></div>${button(business.map,esc(c.directions),'outline','maps_click',true)}</div><img src="${asset('images/587_0.jpg')}" width="1905" height="859" loading="lazy" alt="${esc(c.photoAlt)}"></div></section>
-    <section class="section wrap operator-planning"><p class="eyebrow">01</p><h2>${esc(c.planningTitle)}</h2><p>${esc(c.planningText)}</p></section>
-    <section class="section wrap operator-process"><p class="eyebrow">02</p><h2>${esc(c.processTitle)}</h2><ol>${c.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol></section>
-    <section class="cta"><div><p class="eyebrow">03</p><h2>${esc(c.paymentTitle)}</h2><p>${esc(c.paymentText)}</p></div><div class="actions">${button(requestUrl,esc(c.requestCta),'light','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.paymentCta),'ghost','phone_click')}</div></section>`;
+    <section class="section wrap operator-planning"><h2>${esc(c.planningTitle)}</h2><p>${esc(c.planningText)}</p></section>
+    <section class="section wrap operator-process"><h2>${esc(c.processTitle)}</h2><ol>${c.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol></section>
+    <section class="cta"><div><h2>${esc(c.paymentTitle)}</h2><p>${esc(c.paymentText)}</p></div><div class="actions">${button(requestUrl,esc(c.requestCta),'light','tour_operator_request')}${button(`tel:${business.phoneHref}`,esc(c.paymentCta),'ghost','phone_click')}</div></section>`;
 }
 
 function groupRequestField(c, name, type = 'text', required = false, extra = '') {
