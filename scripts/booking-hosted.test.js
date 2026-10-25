@@ -29,8 +29,6 @@ test('hosted mode is disabled until every test setting is present', async () => 
   assert.equal(bookingConfig({ ...enabled, RESEND_API_KEY: '' }), null);
   assert.deepEqual(await (await bookingMode({ env: enabled })).json(), { enabled: true });
   assert.deepEqual(await (await bookingMode({ env: {} })).json(), { enabled: false });
-  const diagnostic = await bookingMode({ request: new Request(`${origin}/api/booking-mode?diagnose=1`), env: { ...enabled, RESEND_API_KEY: '' } });
-  assert.deepEqual(await diagnostic.json(), { enabled: false, checks: { enabledFlag: true, keyPresent: false, inboxValid: true, allowedEmailsValid: true } });
 });
 
 test('valid hosted request sends two emails and returns submitted details', async () => {

@@ -25,11 +25,7 @@ export function bookingConfig(env = {}) {
   return { apiKey: env.RESEND_API_KEY.trim(), inbox, allowedEmails, sender: env.RESEND_FROM_EMAIL?.trim() || undefined };
 }
 
-export const bookingMode = ({ request, env }) => {
-  const enabled = Boolean(bookingConfig(env));
-  const diagnose = request && new URL(request.url).searchParams.get('diagnose') === '1';
-  return json(200, { enabled, ...(diagnose ? { checks: bookingChecks(env) } : {}) });
-};
+export const bookingMode = ({ env }) => json(200, { enabled: Boolean(bookingConfig(env)) });
 export const methodNotAllowed = () => json(405, { result: 'method_not_allowed' });
 
 async function readJson(request) {

@@ -1,12 +1,12 @@
 # Consumer booking email: current prototype setup
 
-This document records the **implemented and locally tested** consumer enquiry flow, the owner’s later changes to the original fixed-inbox test brief, and what is still needed before hosted use. It is not a production runbook. The existing live site at `phuketshooters.com` and its booking and email systems have not been changed. The prototype domain is `phuket-shooters.com` (with a hyphen).
+This document records the **implemented and tested** consumer enquiry flow, the owner’s later changes to the original fixed-inbox test brief, and what is still needed before unrestricted public use. It is not a production runbook. The existing live site at `phuketshooters.com` and its booking and email systems have not been changed. The prototype domain is `phuket-shooters.com` (with a hyphen).
 
 ## Current scope and hosting
 
 - Consumer enquiries only. The separate English, Thai and Chinese tour-operator/group-request form still produces an in-page preview; it sends no email or network request, stores no data and confirms no booking. Arabic and Russian have no group-request pages.
 - The local Resend endpoint is in `scripts/dev.js` and runs only with the local preview bound to `127.0.0.1`. It is enabled only when both an API key and `RESEND_TEST_INBOX` are configured. Open the site using `http://127.0.0.1:8080/`, not `localhost`, for the local sending test.
-- A Cloudflare Worker script now exists in `worker/index.mjs`, with shared validation and email templates in `scripts/booking-email.mjs`. The existing Cloudflare project is a static-assets-only Worker; the script must be deployed before runtime variables and secrets can be added in its dashboard. The endpoint is off unless its server-side configuration is complete. No hosted Cloudflare email delivery has been verified yet.
+- A Cloudflare Worker script now exists in `worker/index.mjs`, with shared validation and email templates in `scripts/booking-email.mjs`. The existing Cloudflare project began as a static-assets-only Worker; the script was deployed before adding runtime variables and secrets. The endpoint is off unless its server-side configuration is complete. A controlled hosted test has succeeded.
 - GitHub Pages deploys the generated static `dist/` site. It cannot run either endpoint or read the local API key file. Its published consumer form remains **non-sending**, even after the code is committed and pushed. No Resend secret has been added to GitHub Pages.
 - Do not put the API key in this repository, an `.env` file that could be committed, generated HTML/JavaScript, a screenshot, a browser request, or a log. The local key file is outside the repository. `.env.example` contains configuration examples, not credentials.
 
@@ -44,9 +44,11 @@ The dashboard may suggest updating `wrangler.jsonc` after variables are added. D
 
 When enabled, submit one consumer enquiry with an allowed address, check the staff/test inbox and customer inbox, and verify the confirmation shows the entered details. Do not test with a real customer's email until the public-release safeguards are agreed. Resend idempotency keys are stable per submission and per email; they protect retries across Worker instances for Resend's 24-hour idempotency window. The local in-memory duplicate map is not durable in Cloudflare and is not relied on as a production store.
 
+On 25 October 2026, the owner submitted a controlled enquiry on the hosted prototype using an allowlisted test customer address. The page showed “Enquiry received” and the entered details. The consumer enquiry email arrived at `salmoni@gmail.com`, and the acknowledgement arrived at the test customer address. This verifies the basic hosted flow and inbox delivery for that test, not unrestricted public readiness or a confirmed booking.
+
 ## Before unrestricted public use or production transition
 
-- The Worker script is implemented but still requires configuration, deployment and a real hosted inbox test. Do not copy the local key file into the deployment artifact.
+- Keep the Resend key in the encrypted Cloudflare secret and the allowlist enabled during controlled testing. Do not copy the local key file into the deployment artifact.
 - Decide the permanent staff recipient and reply address, then configure them as deployment settings. Inform staff before enabling live enquiries. The current `RESEND_TEST_INBOX` name reflects local testing, not a final production inbox.
 - Keep the wording as an **enquiry acknowledgement**, not a booking confirmation. Check the existing system’s operational handoff, monitoring and failure handling before accepting public submissions.
 - Add suitable public-endpoint protections and policies: abuse/rate limiting, privacy/retention notice, delivery or bounce monitoring, and a review of partial-send and retry behaviour in a multi-instance serverless environment. The current in-memory idempotency map is local-process-only and is not sufficient for distributed production deployment.
