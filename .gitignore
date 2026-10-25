@@ -5,3 +5,6 @@ node_modules/
 Thumbs.db
 .vscode/settings.json
 public/assets/images/PS-main-tours-English-mob.jpeg
+.env
+.env.*
+!.env.example

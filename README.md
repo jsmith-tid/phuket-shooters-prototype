@@ -2,7 +2,7 @@
 
 An unofficial English/Thai prototype with draft Simplified Chinese, Modern Standard Arabic and Russian subsites for re-platforming [phuketshooters.com](https://www.phuketshooters.com/). The live Wix site is the canonical English content source and remains untouched.
 
-The prototype is intentionally protected from search indexing. Its booking form is a demonstration only and never sends data.
+The prototype is intentionally protected from search indexing. The consumer booking form can send test emails only when the localhost preview server is explicitly configured; the GitHub Pages version remains non-sending.
 
 ## Run locally
 
@@ -103,13 +103,23 @@ The UI uses 12 curated gallery images instead of the live gallery’s much large
 
 The Courses page also includes the supplied competition-exercise video as a native, non-autoplaying H.264 MP4 with controls, inline mobile playback and a poster frame extracted from the footage.
 
-## Prototype booking form
+## Local Resend test for consumer enquiries
 
-The form uses normal, labelled HTML fields and native validation. Submission is intercepted locally and displays:
+The normal GitHub Pages form still previews without sending. To test real email acceptance locally, set `RESEND_API_KEY_FILE` to an absolute path **outside this repository** and `RESEND_TEST_INBOX` to the business/test notification inbox before starting `npm run dev`. Alternatively set `RESEND_API_KEY` in the server process environment. The sender defaults to `Phuket Shooters <bookings@mail.phuket-shooters.com>`, using the verified prototype sending domain; override it with `RESEND_FROM_EMAIL` if needed. The variable names are listed in `.env.example`; this project does not automatically load `.env` files.
 
-> No enquiry has been sent. Contact Phuket Shooters by WhatsApp or phone to make arrangements.
+In PowerShell, for example:
 
-No network request is made and no customer data is stored. A production backend can later be attached to the existing form without redesigning it.
+```powershell
+$env:RESEND_API_KEY_FILE = 'C:\path\outside\repository\key.txt'
+$env:RESEND_TEST_INBOX = 'your-resend-account@example.com'
+npm run dev
+```
+
+Open `http://127.0.0.1:8080/book/` (or your chosen `PORT`). With the local endpoint enabled, the button says “Send enquiry”; the server validates the fields, sends the business notification to `RESEND_TEST_INBOX`, and sends the acknowledgement to the **email entered in the form**. Only test with addresses you control. A confirmation screen displays the server-validated submitted details only if Resend accepts both messages; a partial or failed send leaves the form available to retry. Acceptance does not establish inbox delivery or confirm a booking. Check both inboxes and the Resend dashboard separately.
+
+The localhost server binds to `127.0.0.1`. The API key stays server-side; it is not written to generated assets. The group-request form remains unchanged and never sends. GitHub Pages cannot run this endpoint or read a local key file. Hosted email testing would require a separate serverless endpoint and deployment secret; no hosted endpoint or secret is configured here.
+
+Restart `npm run dev` after changing server-side scripts: Node keeps the loaded email handler in memory, even if generated page assets are rebuilt.
 
 ## Analytics-ready events
 

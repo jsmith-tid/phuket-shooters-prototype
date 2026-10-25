@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "dev": "node scripts/dev.js",
-    "check": "node scripts/check.js && node scripts/check-tour-operators.js && node scripts/check-news.js"
+    "check": "node scripts/check.js && node scripts/check-tour-operators.js && node scripts/check-news.js && node --test scripts/booking-email.test.js"
   },
   "engines": { "node": ">=20" }
 }

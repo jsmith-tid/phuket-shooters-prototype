@@ -5,7 +5,56 @@
   const language=document.querySelector('[data-language]'), languageButton=language?.querySelector('button'), languageMenu=language?.querySelector('.language__menu');
   languageButton?.addEventListener('click',()=>{const open=languageButton.getAttribute('aria-expanded')==='true';languageButton.setAttribute('aria-expanded',String(!open));languageMenu.hidden=open;});
   document.addEventListener('click',e=>{if(language&&!language.contains(e.target)){languageButton.setAttribute('aria-expanded','false');languageMenu.hidden=true;}});
-  document.querySelector('[data-prototype-form]')?.addEventListener('submit',e=>{e.preventDefault();const result=e.currentTarget.querySelector('.form-result');result.hidden=false;result.focus();window.phuketShootersTrack?.('booking_submit');});
+  const bookingForm=document.querySelector('[data-prototype-form]');
+  if(bookingForm){
+    const messages=JSON.parse(bookingForm.dataset.testMessages||'{}'),button=bookingForm.querySelector('button[type="submit"]'),result=bookingForm.querySelector('.form-result');
+    let testEnabled=false,submissionId=null,busy=false;
+    if(location.hostname==='127.0.0.1')fetch('/api/booking-mode',{cache:'no-store'}).then(response=>response.ok?response.json():null).then(mode=>{
+      if(mode?.enabled){testEnabled=true;button.firstChild.textContent=messages.send;}
+    }).catch(()=>{});
+    bookingForm.addEventListener('input',()=>{if(!busy)submissionId=null;});
+    bookingForm.addEventListener('submit',async event=>{
+      event.preventDefault();
+      if(!testEnabled){result.hidden=false;result.focus();return;}
+      if(busy)return;
+      if(!bookingForm.reportValidity())return;
+      busy=true;button.disabled=true;button.firstChild.textContent=messages.sending;result.hidden=true;
+      submissionId ||= crypto.randomUUID();
+      const values=Object.fromEntries(new FormData(bookingForm));
+      const payload={...values,agree:bookingForm.querySelector('.check input').checked,submissionId};
+      const controls=bookingForm.querySelectorAll('input,textarea');
+      controls.forEach(control=>control.disabled=true);
+      try{
+        const response=await fetch('/api/booking-enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store'});
+        const data=await response.json();
+        if(data.result==='accepted' && !data.details){
+          result.textContent=messages.outdated;
+        }else if(data.result==='accepted'){
+          const confirmation=bookingForm.parentElement.querySelector('.booking-confirmation');
+          confirmation.querySelector('h2').textContent=messages.title;
+          confirmation.querySelector('p').textContent=messages.accepted;
+          const detailsHeading=document.createElement('h3'),detailsList=document.createElement('dl');
+          detailsHeading.textContent=messages.details;
+          detailsList.className='booking-confirmation__details';
+          for(const key of ['name','phone','email','people','date','start','end','extra']){
+            const label=bookingForm.querySelector(`label[for="${key}"] span`),row=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');
+            term.textContent=label.firstChild.textContent.trim();
+            value.textContent=String(data.details[key] || '—');
+            value.dir='auto';
+            row.append(term,value);detailsList.append(row);
+          }
+          confirmation.querySelector('a').before(detailsHeading,detailsList);
+          bookingForm.hidden=true;confirmation.hidden=false;confirmation.focus();
+          window.phuketShootersTrack?.('booking_submit');
+          return;
+        }
+        else if(data.result==='changed'){submissionId=null;result.textContent=messages.changed;}
+        else result.textContent=data.result==='partial'?messages.partial:messages.failed;
+      }catch{result.textContent=messages.failed;}
+      finally{busy=false;button.disabled=false;button.firstChild.textContent=messages.send;controls.forEach(control=>control.disabled=false);}
+      result.hidden=false;result.focus();
+    });
+  }
   document.querySelectorAll('[data-demo-group-form]').forEach(form=>{
     const messages=JSON.parse(form.dataset.messages||'{}');
     const preview=form.parentElement.querySelector('[data-group-preview]');
