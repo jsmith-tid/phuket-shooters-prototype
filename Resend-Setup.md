@@ -40,6 +40,8 @@ The existing Cloudflare project is a static-assets-only Worker, not Cloudflare P
 
 After the Worker script is deployed, configure `RESEND_API_KEY` as an encrypted Worker secret and set `RESEND_TEST_INBOX`, `BOOKING_ALLOWED_EMAILS` (comma-separated email addresses controlled by the tester), and `BOOKING_EMAIL_ENABLED=true` in the Worker's runtime Variables and Secrets. `RESEND_FROM_EMAIL` is optional. The endpoint accepts only a listed customer email; it will not use a recipient or sender supplied by the browser for the business notification. It also checks same-origin requests, JSON content type, an 8 KiB body limit and the shared field validation. Those checks and the test allowlist do not constitute full public anti-abuse protection.
 
+The dashboard may suggest updating `wrangler.jsonc` after variables are added. Do not copy a secret value into the repository. The config uses `keep_vars: true` so dashboard-managed plain-text test variables survive later `wrangler deploy` runs. Encrypted secrets are retained separately by Cloudflare.
+
 When enabled, submit one consumer enquiry with an allowed address, check the staff/test inbox and customer inbox, and verify the confirmation shows the entered details. Do not test with a real customer's email until the public-release safeguards are agreed. Resend idempotency keys are stable per submission and per email; they protect retries across Worker instances for Resend's 24-hour idempotency window. The local in-memory duplicate map is not durable in Cloudflare and is not relied on as a production store.
 
 ## Before unrestricted public use or production transition

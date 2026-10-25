@@ -132,6 +132,8 @@ The existing `phuket-shooters-prototype` Cloudflare deployment is a static-asset
 
 `RESEND_FROM_EMAIL` is optional. Never place the key in the repository, generated assets, a Wrangler command-line argument or a screenshot. After deployment and configuration, check `/api/booking-mode` on the prototype URL: it should return `{"enabled":true}` before testing the form. Test only with an address in `BOOKING_ALLOWED_EMAILS`, and verify both actual inboxes. This is a controlled hosted test, not an unrestricted production endpoint. The current allowlist and same-origin check are not substitutes for public abuse protection; see `Resend-Setup.md`.
 
+`wrangler.jsonc` uses `keep_vars: true` because these test variables are managed in the Cloudflare dashboard from a phone. Future Git deployments must preserve them; the encrypted Resend key remains a dashboard secret and must never be copied into source control.
+
 To check routing without credentials, run `npm run build`, then `npx wrangler dev --ip 127.0.0.1 --port 8788`. The mode endpoint should return `{"enabled":false}` and the form should not send. Automated Worker tests use a fake Resend response and send no email.
 
 Restart `npm run dev` after changing server-side scripts: Node keeps the loaded email handler in memory, even if generated page assets are rebuilt.
