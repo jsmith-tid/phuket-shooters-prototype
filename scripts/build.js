@@ -36,6 +36,13 @@ const bookingTestMessages = {
   ar: { send: 'إرسال الاستفسار', sending: 'جارٍ إرسال الاستفسار…', title: 'تم استلام الاستفسار', accepted: 'استلمنا استفسارك وأرسلنا نسخة إلى عنوان البريد الإلكتروني أدناه. هذا لا يؤكد الحجز؛ سيتواصل فريقنا لتأكيد التوافر والترتيبات.', outdated: 'خادم المعاينة المحلي يعمل بإصدار قديم. ربما أُرسلت الرسائل بالفعل. أعد تشغيل الخادم قبل المحاولة مجددًا.', details: 'تفاصيل استفسارك', partial: 'قُبلت رسالة واحدة فقط. يُرجى إعادة المحاولة؛ لم يُؤكَّد أي حجز.', failed: 'تعذر إرسال الاستفسار. يُرجى المحاولة مجددًا أو التواصل مع الفريق مباشرة.', changed: 'تغيّرت التفاصيل. يُرجى إرسال الاستفسار مجددًا.' },
   ru: { send: 'Отправить запрос', sending: 'Отправка запроса…', title: 'Запрос получен', accepted: 'Мы получили ваш запрос и отправили копию на указанный ниже адрес. Это ещё не подтверждение бронирования; наша команда уточнит наличие мест и детали.', outdated: 'Локальный сервер предпросмотра работает на старой версии. Письма, возможно, уже отправлены. Перезапустите сервер перед повторной попыткой.', details: 'Данные вашего запроса', partial: 'Принято только одно письмо. Повторите попытку; бронирование не подтверждено.', failed: 'Не удалось отправить запрос. Повторите попытку или свяжитесь с командой напрямую.', changed: 'Данные изменились. Отправьте запрос ещё раз.' }
 };
+const formScriptRequired = {
+  en: 'Online enquiries need JavaScript. Please enable it, or contact us by phone or WhatsApp.',
+  th: 'การส่งคำสอบถามออนไลน์ต้องใช้ JavaScript โปรดเปิดใช้งานหรือติดต่อเราทางโทรศัพท์หรือ WhatsApp',
+  zh: '在线咨询需要启用 JavaScript。请启用后重试，或通过电话或 WhatsApp 联系我们。',
+  ar: 'يتطلب إرسال الاستفسار عبر الإنترنت تفعيل JavaScript. يُرجى تفعيله أو التواصل معنا عبر الهاتف أو WhatsApp.',
+  ru: 'Для отправки запроса через сайт необходим JavaScript. Включите его или свяжитесь с нами по телефону либо WhatsApp.'
+};
 const newsDate = (item, lang) => {
   if (!item.eventStartDate) return formatDate(item.eventDate, lang);
   const locale = { en: 'en-GB', th: 'th-TH', zh: 'zh-CN', ar: 'ar-u-nu-latn', ru: 'ru-RU' }[lang];
@@ -47,6 +54,10 @@ const newsBody = blocks => blocks.map(block => block.type === 'heading' ? `<h2>$
 
 function button(href, label, kind = 'primary', event = '', external = false) {
   return `<a class="button button--${kind}" href="${href}"${event ? ` data-event="${event}"` : ''}${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}<span aria-hidden="true">→</span></a>`;
+}
+
+function noScriptContact(lang, callLabel) {
+  return `<noscript><div class="form-script-required"><p>${esc(formScriptRequired[lang])}</p><div class="actions">${button(`tel:${business.phoneHref}`,callLabel,'outline','phone_click')}${button(business.whatsapp,copy[lang].whatsapp,'outline','whatsapp_click',true)}</div></div></noscript>`;
 }
 
 function languageMenu(lang, route, c, languages = ['en', 'th', 'zh', 'ar', 'ru']) {

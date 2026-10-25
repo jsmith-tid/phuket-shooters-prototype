@@ -119,6 +119,8 @@
       finally{busy=false;button.disabled=false;button.firstChild.textContent=messages.send;controls.forEach(control=>control.disabled=false);challenge?.reset();}
       result.hidden=false;revealPanel(result);
     });
+    button.type='submit';
+    bookingForm.hidden=false;
   }
   document.querySelectorAll('[data-demo-group-form]').forEach(form=>{
     const messages=JSON.parse(form.dataset.messages||'{}');
@@ -192,6 +194,7 @@
       summary.hidden=false;revealPanel(summary);
     });
     preview.querySelector('[data-edit-group]').addEventListener('click',()=>{preview.hidden=true;form.hidden=false;button.focus();});
+    form.hidden=false;
   });
   document.querySelectorAll('[data-visit-image]').forEach(image=>{const pool=JSON.parse(image.dataset.imagePool||'[]');if(!pool.length)return;const selected=pool[Math.floor(Math.random()*pool.length)];image.alt=selected.alt;image.src=selected.src;image.removeAttribute('data-image-pool');});
   document.querySelectorAll('[data-deferred-video]').forEach(video=>{const load=()=>{video.querySelectorAll('source[data-src]').forEach(source=>{source.src=source.dataset.src;source.removeAttribute('data-src');});video.load();};if(!('IntersectionObserver'in window)){load();return;}const observer=new IntersectionObserver(entries=>{if(!entries.some(entry=>entry.isIntersecting))return;observer.disconnect();load();},{rootMargin:'300px'});observer.observe(video);});
