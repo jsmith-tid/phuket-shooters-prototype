@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
-const { createBookingService } = require('./booking-email');
+const bookingModule = import('./booking-email.mjs');
 
 const date = () => {
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date()).map(part => [part.type, part.value]));
@@ -10,6 +10,7 @@ const date = () => {
 const enquiry = () => ({ submissionId: crypto.randomUUID(), people: '2', date: date(), start: '10:00', end: '11:00', name: '<A & B>', phone: '+66 81 123 4567', email: 'customer@example.org', extra: '<script>alert(1)</script>', agree: true });
 
 test('business email goes to the inbox, acknowledgement to the customer, and HTML is escaped', async () => {
+  const { createBookingService } = await bookingModule;
   const sent = [];
   const submit = createBookingService({ inbox: 'fixed@example.com', send: async (email, key) => { sent.push([email, key]); return { id: String(sent.length) }; } });
   const input = enquiry();
@@ -29,6 +30,7 @@ test('business email goes to the inbox, acknowledgement to the customer, and HTM
 });
 
 test('partial success retries only the missing email', async () => {
+  const { createBookingService } = await bookingModule;
   const keys = [];
   let fail = true;
   const submit = createBookingService({ inbox: 'fixed@example.com', send: async (_email, key) => {
@@ -45,6 +47,7 @@ test('partial success retries only the missing email', async () => {
 });
 
 test('failed requests can retry; changed payloads and invalid fields cannot send', async () => {
+  const { createBookingService } = await bookingModule;
   let sends = 0;
   let fail = true;
   const submit = createBookingService({ inbox: 'fixed@example.com', send: async () => { sends++; if (fail) throw Error('temporary'); return { id: 'accepted' }; } });
@@ -61,6 +64,7 @@ test('failed requests can retry; changed payloads and invalid fields cannot send
 });
 
 test('concurrent repeats share one in-flight send', async () => {
+  const { createBookingService } = await bookingModule;
   let sends = 0;
   const submit = createBookingService({ inbox: 'fixed@example.com', send: async () => { sends++; await new Promise(resolve => setTimeout(resolve, 5)); return { id: 'accepted' }; } });
   const input = enquiry();

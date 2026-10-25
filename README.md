@@ -2,7 +2,7 @@
 
 An unofficial English/Thai prototype with draft Simplified Chinese, Modern Standard Arabic and Russian subsites for re-platforming [phuketshooters.com](https://www.phuketshooters.com/). The live Wix site is the canonical English content source and remains untouched.
 
-The prototype is intentionally protected from search indexing. The consumer booking form can send test emails only when the localhost preview server is explicitly configured; the GitHub Pages version remains non-sending.
+The prototype is intentionally protected from search indexing. The consumer booking form can send test emails through the explicitly configured localhost server or the Cloudflare Worker used for the prototype site. The GitHub Pages version remains non-sending.
 
 ## Run locally
 
@@ -32,6 +32,8 @@ Generated files are written to `dist/` and are not committed.
 - `src/content/news.js` — multilingual Markdown article loader and metadata validation
 - `src/content/tourOperators.js` — draft operator information and group-request preview copy in English, Thai and Simplified Chinese
 - `scripts/build.js` — dependency-free static generator and shared page templates
+- `worker/index.mjs` and `wrangler.jsonc` — opt-in consumer enquiry API alongside the Cloudflare Worker's static assets
+- `src/booking-hosted.mjs` and `scripts/booking-email.mjs` — hosted request handling and shared email validation/templates
 - `public/assets/` — local CSS, JavaScript and images migrated from the live site
 - `public/robots.txt` — prototype crawler block
 - `.github/workflows/pages.yml` — repeatable GitHub Pages build and deployment
@@ -105,7 +107,7 @@ The Courses page also includes the supplied competition-exercise video as a nati
 
 ## Local Resend test for consumer enquiries
 
-The normal GitHub Pages form still previews without sending. To test real email acceptance locally, set `RESEND_API_KEY_FILE` to an absolute path **outside this repository** and `RESEND_TEST_INBOX` to the business/test notification inbox before starting `npm run dev`. Alternatively set `RESEND_API_KEY` in the server process environment. The sender defaults to `Phuket Shooters <bookings@mail.phuket-shooters.com>`, using the verified prototype sending domain; override it with `RESEND_FROM_EMAIL` if needed. The variable names are listed in `.env.example`; this project does not automatically load `.env` files.
+The GitHub Pages form still previews without sending. To test real email acceptance locally, set `RESEND_API_KEY_FILE` to an absolute path **outside this repository** and `RESEND_TEST_INBOX` to the business/test notification inbox before starting `npm run dev`. Alternatively set `RESEND_API_KEY` in the server process environment. The sender defaults to `Phuket Shooters <bookings@mail.phuket-shooters.com>`, using the verified prototype sending domain; override it with `RESEND_FROM_EMAIL` if needed. The variable names are listed in `.env.example`; this project does not automatically load `.env` files.
 
 In PowerShell, for example:
 
@@ -117,7 +119,20 @@ npm run dev
 
 Open `http://127.0.0.1:8080/book/` (or your chosen `PORT`). With the local endpoint enabled, the button says “Send enquiry”; the server validates the fields, sends the business notification to `RESEND_TEST_INBOX`, and sends the acknowledgement to the **email entered in the form**. Only test with addresses you control. A confirmation screen displays the server-validated submitted details only if Resend accepts both messages; a partial or failed send leaves the form available to retry. Acceptance does not establish inbox delivery or confirm a booking. Check both inboxes and the Resend dashboard separately.
 
-The localhost server binds to `127.0.0.1`. The API key stays server-side; it is not written to generated assets. The group-request form remains unchanged and never sends. GitHub Pages cannot run this endpoint or read a local key file. Hosted email testing would require a separate serverless endpoint and deployment secret; no hosted endpoint or secret is configured here.
+The localhost server binds to `127.0.0.1`. The API key stays server-side; it is not written to generated assets. The group-request form remains unchanged and never sends. GitHub Pages cannot run this endpoint or read a local key file.
+
+### Controlled Cloudflare Worker test
+
+The existing `phuket-shooters-prototype` Cloudflare deployment is a static-assets-only Worker, not a Pages project. `worker/index.mjs` adds a Worker script and `wrangler.jsonc` routes only `/api/booking-mode` and `/api/booking-enquiry` through it while preserving static asset delivery. The GitHub Pages deployment cannot serve these routes. The hosted endpoint is **off by default**. After deploying the Worker script, set the following in that Worker's runtime Variables and Secrets:
+
+- `RESEND_API_KEY` — an encrypted secret, ideally a separate sending-only key for the verified `mail.phuket-shooters.com` domain;
+- `RESEND_TEST_INBOX` — the fixed staff/test notification email;
+- `BOOKING_ALLOWED_EMAILS` — comma-separated customer email addresses you control for this test;
+- `BOOKING_EMAIL_ENABLED` — set to `true` only when ready to test.
+
+`RESEND_FROM_EMAIL` is optional. Never place the key in the repository, generated assets, a Wrangler command-line argument or a screenshot. After deployment and configuration, check `/api/booking-mode` on the prototype URL: it should return `{"enabled":true}` before testing the form. Test only with an address in `BOOKING_ALLOWED_EMAILS`, and verify both actual inboxes. This is a controlled hosted test, not an unrestricted production endpoint. The current allowlist and same-origin check are not substitutes for public abuse protection; see `Resend-Setup.md`.
+
+To check routing without credentials, run `npm run build`, then `npx wrangler dev --ip 127.0.0.1 --port 8788`. The mode endpoint should return `{"enabled":false}` and the form should not send. Automated Worker tests use a fake Resend response and send no email.
 
 Restart `npm run dev` after changing server-side scripts: Node keeps the loaded email handler in memory, even if generated page assets are rebuilt.
 
@@ -173,13 +188,13 @@ Do this only after stakeholder approval and only on the final production hostnam
 
 Do not remove the protection from this GitHub Pages prototype.
 
-## Future Cloudflare Pages migration
+## Cloudflare deployment and later production transition
 
-Connect the same repository to Cloudflare Pages with:
+The existing Git-connected Cloudflare project is a Worker serving static assets. The repository now includes `wrangler.jsonc` for that project. Its static build uses:
 
 - build command: `npm run build`
 - output directory: `dist`
 - Node.js: 20 or newer
 - `BASE_PATH`: leave unset for a root/custom-domain deployment
 
-No framework adapter is needed. Before launch, add the production domain, redirects, security headers, form/backend integration and any approved analytics through Cloudflare configuration. DNS changes, real booking delivery and production hosting are intentionally out of scope for this prototype.
+Before publishing the Worker script, confirm the existing Cloudflare Git build and deploy commands use this Wrangler configuration and retain the current domain. Before a real production launch, review redirects, security headers, form protection, staff handoff and approved analytics. The old live site at `phuketshooters.com` is not changed by this work.

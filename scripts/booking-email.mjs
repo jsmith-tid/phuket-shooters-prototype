@@ -1,5 +1,3 @@
-const crypto = require('node:crypto');
-
 const defaultSender = 'Phuket Shooters <bookings@mail.phuket-shooters.com>';
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -8,7 +6,7 @@ const phuketToday = () => {
   return `${parts.year}-${parts.month}-${parts.day}`;
 };
 
-function validate(input) {
+export function validate(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
   const id = input.submissionId;
   if (typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return null;
@@ -38,18 +36,18 @@ function messages(details, inbox, sender) {
   ];
 }
 
-function createBookingService({ send, inbox, sender = defaultSender, now = () => Date.now() }) {
+export function createBookingService({ send, inbox, sender = defaultSender, now = () => Date.now() }) {
   const records = new Map();
   return async function submit(input) {
     const details = validate(input);
     if (!details) return { status: 400, body: { result: 'invalid' } };
     for (const [key, record] of records) if (now() - record.created > 86_400_000) records.delete(key);
     if (records.size > 500) return { status: 429, body: { result: 'busy' } };
-    const payloadHash = crypto.createHash('sha256').update(JSON.stringify(details)).digest('hex');
+    const fingerprint = JSON.stringify(details);
     let record = records.get(details.submissionId);
-    if (record && record.hash !== payloadHash) return { status: 409, body: { result: 'changed' } };
+    if (record && record.fingerprint !== fingerprint) return { status: 409, body: { result: 'changed' } };
     if (!record) {
-      record = { hash: payloadHash, created: now(), accepted: [false, false], pending: null };
+      record = { fingerprint, created: now(), accepted: [false, false], pending: null };
       records.set(details.submissionId, record);
     }
     if (record.pending) return record.pending;
@@ -68,5 +66,3 @@ function createBookingService({ send, inbox, sender = defaultSender, now = () =>
     try { return await record.pending; } finally { record.pending = null; }
   };
 }
-
-module.exports = { createBookingService, validate };

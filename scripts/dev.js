@@ -1,7 +1,6 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { createBookingService } = require('./booking-email');
 require('./build');
 
 const root = path.resolve(__dirname, '../dist');
@@ -23,7 +22,7 @@ const send = async (email, idempotencyKey) => {
   if (!response.ok) throw new Error(`Resend rejected email: HTTP ${response.status}`);
   return response.json();
 };
-const submitBooking = apiKey ? createBookingService({ send, inbox, sender: process.env.RESEND_FROM_EMAIL?.trim() || undefined }) : null;
+let submitBooking = null;
 const json = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(body)); };
 
 async function handleBooking(req, res) {
@@ -43,6 +42,8 @@ async function handleBooking(req, res) {
   } catch { json(res, 400, { result: 'invalid' }); }
 }
 
+import('./booking-email.mjs').then(({ createBookingService }) => {
+submitBooking = apiKey ? createBookingService({ send, inbox, sender: process.env.RESEND_FROM_EMAIL?.trim() || undefined }) : null;
 http.createServer((req, res) => {
   let pathname;
   try { pathname = decodeURIComponent(new URL(req.url, `http://127.0.0.1:${port}`).pathname); }
@@ -60,3 +61,4 @@ http.createServer((req, res) => {
     res.end(data);
   });
 }).listen(port, '127.0.0.1', () => console.log(`Local preview: http://127.0.0.1:${port}${submitBooking ? ' (Resend test enabled)' : ''}`));
+}).catch(error => { console.error(error); process.exitCode = 1; });

@@ -9,7 +9,7 @@
   if(bookingForm){
     const messages=JSON.parse(bookingForm.dataset.testMessages||'{}'),button=bookingForm.querySelector('button[type="submit"]'),result=bookingForm.querySelector('.form-result');
     let testEnabled=false,submissionId=null,busy=false;
-    if(location.hostname==='127.0.0.1')fetch('/api/booking-mode',{cache:'no-store'}).then(response=>response.ok?response.json():null).then(mode=>{
+    fetch('/api/booking-mode',{cache:'no-store'}).then(response=>response.ok?response.json():null).then(mode=>{
       if(mode?.enabled){testEnabled=true;button.firstChild.textContent=messages.send;}
     }).catch(()=>{});
     bookingForm.addEventListener('input',()=>{if(!busy)submissionId=null;});
