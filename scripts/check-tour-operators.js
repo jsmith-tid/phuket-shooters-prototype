@@ -20,7 +20,7 @@ for (const locale of locales) {
   const prefix = `/${locale}`;
   if (!info.includes(`href="${prefix}${requestRoute}/"`)) failures.push(`${locale || 'en'}: no link to group request`);
   if (!request.includes(`href="${prefix}${route}/"`)) failures.push(`${locale || 'en'}: no back link`);
-  if (!request.includes('data-demo-group-form') || !request.includes('type="button" data-preview-group')) failures.push(`${locale || 'en'}: demo form missing or potentially submitting`);
+  if (!request.includes('data-demo-group-form') || !request.includes('data-send-messages=') || !request.includes('type="button" data-preview-group')) failures.push(`${locale || 'en'}: safe group fallback or hosted send copy missing`);
   for (const source of [info, request]) {
     const menu = source.match(/<div class="language__menu"[^>]*>([\s\S]*?)<\/div>/)?.[1] || '';
     const alternates = source.match(/<link rel="alternate"[^>]+>/g) || [];
@@ -37,4 +37,4 @@ if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
 }
-console.log('Checked operator homepage removal, footer visibility, six routes, three-language switching and demo-only form.');
+console.log('Checked operator homepage removal, footer visibility, six routes, three-language switching and group fallback form.');

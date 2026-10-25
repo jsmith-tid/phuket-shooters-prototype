@@ -72,3 +72,42 @@ test('concurrent repeats share one in-flight send', async () => {
   assert.deepEqual(results.map(result => result.body.result), ['accepted', 'accepted']);
   assert.equal(sends, 2);
 });
+
+test('consumer receipts use the selected language and escape submitted text', async () => {
+  const { createBookingService } = await bookingModule;
+  for (const [lang, subject] of Object.entries({ en: 'Your booking enquiry was received', th: 'เราได้รับคำสอบถามของคุณแล้ว', zh: '我们已收到您的预约咨询', ar: 'تم استلام استفسارك بشأن الحجز', ru: 'Ваш запрос на бронирование получен' })) {
+    const sent = [];
+    const submit = createBookingService({ inbox: 'staff@example.org', send: async email => { sent.push(email); return { id: String(sent.length) }; } });
+    assert.equal((await submit({ ...enquiry(), lang })).status, 200);
+    assert.equal(sent[1].subject, subject);
+    assert.match(sent[1].html, new RegExp(`<html lang="${lang}"`));
+    if (lang === 'ar') assert.match(sent[1].html, /dir="rtl"/);
+    assert.match(sent[1].html, /&lt;script&gt;/);
+    assert.deepEqual(sent[0].to, ['staff@example.org']);
+  }
+});
+
+test('group requests send staff and localized customer receipts with validated details', async () => {
+  const { createGroupService, validateGroup } = await bookingModule;
+  const group = lang => ({ submissionId: crypto.randomUUID(), lang, company: 'Tour <Co>', name: 'Agent', email: 'customer@example.org', phone: '+66 81 123 4567', date: date(), time: '10:30', visitors: '40', coaches: '2', activities: 'Archery', questions: '<script>alert(1)</script>' });
+  for (const [lang, subject] of Object.entries({ en: 'Your group request was received', th: 'เราได้รับคำขอสำหรับกรุ๊ปของคุณแล้ว', zh: '我们已收到您的团体预约申请' })) {
+    const sent = [];
+    const submit = createGroupService({ inbox: 'staff@example.org', send: async (email, key) => { sent.push([email, key]); return { id: String(sent.length) }; } });
+    const input = group(lang);
+    const response = await submit(input);
+    assert.equal(response.status, 200);
+    assert.equal(response.body.details.visitors, 40);
+    assert.equal(response.body.details.coaches, 2);
+    assert.deepEqual(sent.map(([email]) => email.to), [['staff@example.org'], ['customer@example.org']]);
+    assert.equal(sent[1][0].subject, subject);
+    assert.match(sent[1][0].html, /&lt;script&gt;/);
+    assert.ok(!sent[1][0].html.includes('<script>'));
+    assert.notEqual(sent[0][1], sent[1][1]);
+    assert.equal((await submit(input)).status, 200);
+    assert.equal(sent.length, 2);
+  }
+  assert.equal(validateGroup({ ...group('en'), date: '2020-01-01' }), null);
+  assert.equal(validateGroup({ ...group('en'), lang: 'ru' }), null);
+  assert.equal(validateGroup({ ...group('en'), visitors: '0' }), null);
+  assert.equal(validateGroup({ ...group('en'), coaches: '-1' }), null);
+});

@@ -1,13 +1,13 @@
-# Consumer booking email: current prototype setup
+# Booking enquiry email: current prototype setup
 
-This document records the **implemented and tested** consumer enquiry flow, the owner’s later changes to the original fixed-inbox test brief, and what is still needed before unrestricted public use. It is not a production runbook. The existing live site at `phuketshooters.com` and its booking and email systems have not been changed. The prototype domain is `phuket-shooters.com` (with a hyphen).
+This document records the **implemented and tested** individual enquiry flow, the new group-request implementation, and what is still needed before unrestricted public use. The group flow has automated tests but still needs a hosted inbox test after deployment. It is not a production runbook. The existing live site at `phuketshooters.com` and its booking and email systems have not been changed. The prototype domain is `phuket-shooters.com` (with a hyphen).
 
 ## Current scope and hosting
 
-- Consumer enquiries only. The separate English, Thai and Chinese tour-operator/group-request form still produces an in-page preview; it sends no email or network request, stores no data and confirms no booking. Arabic and Russian have no group-request pages.
+- Individual enquiries in English, Thai, Chinese, Arabic and Russian; group requests in English, Thai and Chinese. Group pages remain absent in Arabic and Russian. Both forms use the same staff inbox, sending domain and hosted allowlist. Neither receipt confirms a booking.
 - The local Resend endpoint is in `scripts/dev.js` and runs only with the local preview bound to `127.0.0.1`. It is enabled only when both an API key and `RESEND_TEST_INBOX` are configured. Open the site using `http://127.0.0.1:8080/`, not `localhost`, for the local sending test.
 - A Cloudflare Worker script now exists in `worker/index.mjs`, with shared validation and email templates in `scripts/booking-email.mjs`. The existing Cloudflare project began as a static-assets-only Worker; the script was deployed before adding runtime variables and secrets. The endpoint is off unless its server-side configuration is complete. A controlled hosted test has succeeded.
-- GitHub Pages deploys the generated static `dist/` site. It cannot run either endpoint or read the local API key file. Its published consumer form remains **non-sending**, even after the code is committed and pushed. No Resend secret has been added to GitHub Pages.
+- GitHub Pages deploys the generated static `dist/` site. It cannot run either endpoint or read the local API key file. Its forms remain **non-sending**, even after the code is committed and pushed. No Resend secret has been added to GitHub Pages.
 - Do not put the API key in this repository, an `.env` file that could be committed, generated HTML/JavaScript, a screenshot, a browser request, or a log. The local key file is outside the repository. `.env.example` contains configuration examples, not credentials.
 
 ## Verified sending domain
@@ -21,7 +21,7 @@ This document records the **implemented and tested** consumer enquiry flow, the 
 1. The browser validates the required fields and sends them to the local `/api/booking-enquiry` endpoint. The API key stays on the server.
 2. The server validates the name, phone, email, party size, date, start/end time, terms acknowledgement and field lengths. It escapes submitted text in the email HTML. The request is limited in size and must come from the local preview origin.
 3. Resend receives **two separate messages**: a business notification to the server-configured `RESEND_TEST_INBOX`, with `Reply-To` set to the customer’s entered address; and an acknowledgement to the email entered on the form, with `Reply-To` set to the staff/test inbox. The browser cannot override the staff inbox or sender.
-4. The email subjects are `Consumer booking enquiry` and `Your booking enquiry was received`. The acknowledgement says that receipt **does not confirm a booking** and that staff will confirm availability and arrangements separately.
+4. The staff subject is `Consumer booking enquiry`; the customer subject and receipt are translated into the selected page language. The acknowledgement says that receipt **does not confirm a booking** and that staff will confirm availability and arrangements separately.
 5. Only after Resend accepts both messages does the page show **“Enquiry received”** and the server-validated details: name, phone, email, number of people, date, start time, end time and additional information. The detail values are inserted as text, not HTML. A partial or failed send leaves the form available to retry; matching retries use separate idempotency keys for the two emails to avoid duplicating an accepted message.
 
 Acceptance by Resend is not proof that an email arrived in an inbox. This process does not reserve a place, confirm availability, take payment or create a booking in the existing system. For now, test only with customer email addresses you control.
@@ -36,7 +36,7 @@ The owner confirmed a successful browser test after restarting the local server:
 
 ## Controlled Cloudflare Worker test
 
-The existing Cloudflare project is a static-assets-only Worker, not Cloudflare Pages. The added `wrangler.jsonc` declares the Worker entrypoint and `dist/` asset directory. Only the two booking API paths invoke the Worker script first; ordinary pages continue to be served as static assets. Confirm the existing Git build and deploy commands use this configuration before pushing. The browser checks `/api/booking-mode` on the same origin; on GitHub Pages or an unconfigured Cloudflare deployment the form remains non-sending.
+The existing Cloudflare project is a static-assets-only Worker, not Cloudflare Pages. The added `wrangler.jsonc` declares the Worker entrypoint and `dist/` asset directory. Only the three booking API paths (`/api/booking-mode`, `/api/booking-enquiry` and `/api/group-enquiry`) invoke the Worker script first; ordinary pages continue to be served as static assets. The browser checks `/api/booking-mode` on the same origin; on GitHub Pages or an unconfigured Cloudflare deployment the forms remain non-sending.
 
 After the Worker script is deployed, configure `RESEND_API_KEY` as an encrypted Worker secret and set `RESEND_TEST_INBOX`, `BOOKING_ALLOWED_EMAILS` (comma-separated email addresses controlled by the tester), and `BOOKING_EMAIL_ENABLED=true` in the Worker's runtime Variables and Secrets. `RESEND_FROM_EMAIL` is optional. The endpoint accepts only a listed customer email; it will not use a recipient or sender supplied by the browser for the business notification. It also checks same-origin requests, JSON content type, an 8 KiB body limit and the shared field validation. Those checks and the test allowlist do not constitute full public anti-abuse protection.
 
@@ -56,4 +56,10 @@ On 25 October 2026, the owner submitted a controlled enquiry on the hosted proto
 
 ## Group enquiries: separate decision
 
-Do not silently connect the current group preview to this consumer endpoint. A group request has different fields and a staff-led discussion/confirmation process. It can reuse the same **server-side email pattern** once the owner approves its recipient, acknowledgement wording, submitted-detail summary, validation rules and whether it should remain a request rather than a booking confirmation. The outstanding group capacity, arrival and payment details are tracked in `docs/launch-checks.md`. Until that separate work is agreed and implemented, the group form remains non-sending.
+The separate `/api/group-enquiry` endpoint validates the group fields and sends two messages: an English staff notification and a customer receipt in English, Thai or Chinese. The receipt and on-page result show submitted details and explicitly say that neither the visit nor coach parking has been reserved. The group request follows the same controlled hosted allowlist and Resend settings as the individual form. Before unrestricted public release, add abuse protection and monitoring, confirm staff handling, and resolve the business questions in `docs/launch-checks.md`.
+
+## Before opening either form to all visitors
+
+Keep `BOOKING_ALLOWED_EMAILS` in place during prototype testing. Same-origin checks and an email allowlist are controls for the current test, not a public spam defence. For public use, add a challenge such as Cloudflare Turnstile to both forms and verify its token on the Worker before sending email. Add an endpoint rate limit (per client/IP with a sensible burst allowance), keep the body and field-length limits, and decide how to handle repeat requests and addresses generating bounces. Test that an invalid/expired challenge and an exceeded rate limit send no email.
+
+For operations, choose the permanent staff inbox and a named person plus backup to monitor it. Agree a response target, how group requests enter the existing booking record, and how staff explicitly confirm or decline dates and parking. Set alerts for Worker failures, Resend rejections and delivery problems; check both staff and customer inboxes during a controlled launch. Document retry and partial-delivery handling so staff can trace a request without treating an automatic receipt as a confirmed booking. Agree privacy wording, access and retention for contact details, and review the Thai, Chinese, Arabic and Russian receipt copy with stakeholders.

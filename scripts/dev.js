@@ -23,11 +23,12 @@ const send = async (email, idempotencyKey) => {
   return response.json();
 };
 let submitBooking = null;
+let submitGroup = null;
 const json = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(body)); };
 
-async function handleBooking(req, res) {
+async function handleBooking(req, res, submit) {
   if (req.method !== 'POST') return json(res, 405, { result: 'method_not_allowed' });
-  if (!submitBooking) return json(res, 503, { result: 'unavailable' });
+  if (!submit) return json(res, 503, { result: 'unavailable' });
   if (req.headers.origin !== `http://127.0.0.1:${port}`) return json(res, 403, { result: 'forbidden' });
   if (!String(req.headers['content-type'] || '').startsWith('application/json')) return json(res, 415, { result: 'invalid_type' });
   if (Number(req.headers['content-length'] || 0) > 8192) return json(res, 413, { result: 'too_large' });
@@ -37,19 +38,21 @@ async function handleBooking(req, res) {
       body += chunk;
       if (Buffer.byteLength(body) > 8192) return json(res, 413, { result: 'too_large' });
     }
-    const result = await submitBooking(JSON.parse(body));
+    const result = await submit(JSON.parse(body));
     json(res, result.status, result.body);
   } catch { json(res, 400, { result: 'invalid' }); }
 }
 
-import('./booking-email.mjs').then(({ createBookingService }) => {
+import('./booking-email.mjs').then(({ createBookingService, createGroupService }) => {
 submitBooking = apiKey ? createBookingService({ send, inbox, sender: process.env.RESEND_FROM_EMAIL?.trim() || undefined }) : null;
+submitGroup = apiKey ? createGroupService({ send, inbox, sender: process.env.RESEND_FROM_EMAIL?.trim() || undefined }) : null;
 http.createServer((req, res) => {
   let pathname;
   try { pathname = decodeURIComponent(new URL(req.url, `http://127.0.0.1:${port}`).pathname); }
   catch { res.writeHead(400); return res.end(); }
   if (pathname === '/api/booking-mode') return req.method === 'GET' ? json(res, 200, { enabled: Boolean(submitBooking) }) : json(res, 405, { result: 'method_not_allowed' });
-  if (pathname === '/api/booking-enquiry') return void handleBooking(req, res);
+  if (pathname === '/api/booking-enquiry') return void handleBooking(req, res, submitBooking);
+  if (pathname === '/api/group-enquiry') return void handleBooking(req, res, submitGroup);
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); return res.end(); }
   let file = path.resolve(root, `.${pathname}`);
   if (!path.extname(file)) file = path.join(file, 'index.html');

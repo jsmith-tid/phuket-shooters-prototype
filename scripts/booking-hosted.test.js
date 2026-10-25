@@ -88,7 +88,21 @@ test('Worker routes booking requests and delegates ordinary pages to static asse
   assert.deepEqual(await mode.json(), { enabled: false });
   assert.equal((await worker.fetch(new Request(`${origin}/api/booking-mode`, { method: 'POST' }), env)).status, 405);
   assert.equal((await worker.fetch(new Request(`${origin}/api/booking-enquiry`), env)).status, 405);
+  assert.equal((await worker.fetch(new Request(`${origin}/api/group-enquiry`), env)).status, 405);
   const page = await worker.fetch(new Request(`${origin}/book/`), env);
   assert.equal(await page.text(), 'static page');
   assert.equal(assetRequests, 1);
+});
+
+test('hosted group endpoint uses the existing inbox and allowlist', async () => {
+  const { handleGroup } = await hostedModule;
+  const payload = { submissionId: randomUUID(), lang: 'zh', company: 'Operator', name: 'Agent', email: 'first@example.org', phone: '', date: today(), time: '10:00', visitors: '40', coaches: '2', activities: '', questions: '' };
+  const sent = [];
+  const fakeFetch = async (_url, options) => { sent.push(JSON.parse(options.body)); return Response.json({ id: String(sent.length) }); };
+  assert.equal((await handleGroup(context(payload), fakeFetch)).status, 200);
+  assert.deepEqual(sent.map(message => message.to), [['staff@example.org'], ['first@example.org']]);
+  assert.match(sent[1].subject, /团体/);
+  assert.equal((await handleGroup(context({ ...payload, submissionId: randomUUID(), email: 'other@example.org' }), fakeFetch)).status, 403);
+  assert.equal((await handleGroup(context(payload, { ...enabled, BOOKING_EMAIL_ENABLED: 'false' }), fakeFetch)).status, 503);
+  assert.equal(sent.length, 2);
 });

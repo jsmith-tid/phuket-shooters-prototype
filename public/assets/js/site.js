@@ -21,7 +21,7 @@
       busy=true;button.disabled=true;button.firstChild.textContent=messages.sending;result.hidden=true;
       submissionId ||= crypto.randomUUID();
       const values=Object.fromEntries(new FormData(bookingForm));
-      const payload={...values,agree:bookingForm.querySelector('.check input').checked,submissionId};
+      const payload={...values,lang:document.documentElement.lang.split('-')[0],agree:bookingForm.querySelector('.check input').checked,submissionId};
       const controls=bookingForm.querySelectorAll('input,textarea');
       controls.forEach(control=>control.disabled=true);
       try{
@@ -57,14 +57,19 @@
   }
   document.querySelectorAll('[data-demo-group-form]').forEach(form=>{
     const messages=JSON.parse(form.dataset.messages||'{}');
+    const sendMessages=JSON.parse(form.dataset.sendMessages||'{}');
     const preview=form.parentElement.querySelector('[data-group-preview]');
     const summary=form.querySelector('.group-error-summary');
+    const button=form.querySelector('[data-preview-group]');
+    let sendEnabled=false,submissionId=null,busy=false;
+    fetch('/api/booking-mode',{cache:'no-store'}).then(response=>response.ok?response.json():null).then(mode=>{
+      if(mode?.enabled){sendEnabled=true;button.type='submit';button.firstChild.textContent=sendMessages.send;document.querySelector('[data-group-request-intro]').textContent=sendMessages.intro;}
+    }).catch(()=>{});
     const input=name=>form.elements.namedItem(name);
     const showError=(name,message)=>{const field=input(name),error=form.querySelector(`#group-${name}-error`);field.setAttribute('aria-invalid','true');field.setAttribute('aria-describedby',error.id);error.textContent=message;error.hidden=false;};
     const clearError=name=>{const field=input(name),error=form.querySelector(`#group-${name}-error`);field.removeAttribute('aria-invalid');field.removeAttribute('aria-describedby');error.textContent='';error.hidden=true;};
-    form.addEventListener('submit',event=>event.preventDefault());
-    form.querySelectorAll('input,textarea').forEach(field=>field.addEventListener('input',()=>clearError(field.name)));
-    form.querySelector('[data-preview-group]').addEventListener('click',()=>{
+    form.querySelectorAll('input,textarea').forEach(field=>field.addEventListener('input',()=>{clearError(field.name);if(!busy)submissionId=null;}));
+    const validateValues=()=>{
       const values=Object.fromEntries([...form.elements].filter(field=>field.name).map(field=>[field.name,field.value.trim()]));
       form.querySelectorAll('input,textarea').forEach(field=>clearError(field.name));
       const invalid=[];
@@ -73,10 +78,13 @@
       const dateParts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(part=>[part.type,part.value]));
       const todayInPhuket=`${dateParts.year}-${dateParts.month}-${dateParts.day}`;
       if(values.date && values.date<todayInPhuket) invalid.push(['date',messages.date]);
-      if(values.visitors && (!/^\d+$/.test(values.visitors)||!Number.isSafeInteger(Number(values.visitors))||Number(values.visitors)<1)) invalid.push(['visitors',messages.visitors]);
-      if(values.coaches && (!/^\d+$/.test(values.coaches)||!Number.isSafeInteger(Number(values.coaches)))) invalid.push(['coaches',messages.coaches]);
-      if(invalid.length){for(const [name,message] of invalid)showError(name,message);summary.textContent=messages.summary;summary.hidden=false;summary.focus();return;}
+      if(values.visitors && (!/^\d+$/.test(values.visitors)||!Number.isSafeInteger(Number(values.visitors))||Number(values.visitors)<1||Number(values.visitors)>10000)) invalid.push(['visitors',messages.visitors]);
+      if(values.coaches && (!/^\d+$/.test(values.coaches)||!Number.isSafeInteger(Number(values.coaches))||Number(values.coaches)>99)) invalid.push(['coaches',messages.coaches]);
+      if(invalid.length){for(const [name,message] of invalid)showError(name,message);summary.textContent=messages.summary;summary.hidden=false;summary.focus();return null;}
       summary.hidden=true;
+      return values;
+    };
+    const showPreview=values=>{
       const [year,month,day]=values.date.split('-').map(Number);
       preview.querySelector('[data-preview-date]').textContent=new Intl.DateTimeFormat(form.dataset.locale,{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Bangkok'}).format(new Date(Date.UTC(year,month-1,day,12)));
       preview.querySelector('[data-preview-time-wrap]').hidden=!values.time;
@@ -84,8 +92,37 @@
       preview.querySelector('[data-preview-visitors]').textContent=new Intl.NumberFormat(form.dataset.locale).format(Number(values.visitors));
       preview.querySelector('[data-preview-coaches]').textContent=new Intl.NumberFormat(form.dataset.locale).format(Number(values.coaches||0));
       form.hidden=true;preview.hidden=false;preview.focus();
+    };
+    button.addEventListener('click',()=>{if(!sendEnabled){const values=validateValues();if(values)showPreview(values);}});
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();
+      if(!sendEnabled||busy)return;
+      const values=validateValues();if(!values)return;
+      busy=true;button.disabled=true;button.firstChild.textContent=sendMessages.sending;submissionId ||= crypto.randomUUID();
+      const controls=form.querySelectorAll('input,textarea');controls.forEach(control=>control.disabled=true);
+      try{
+        const response=await fetch('/api/group-enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...values,lang:form.dataset.language,submissionId}),cache:'no-store'});
+        const data=await response.json();
+        if(data.result==='accepted'&&data.details){
+          preview.querySelector('h2').textContent=sendMessages.title;
+          preview.querySelector('p').textContent=sendMessages.accepted;
+          const list=preview.querySelector('dl');list.replaceChildren();
+          for(const key of ['company','name','email','phone','date','time','visitors','coaches','activities','questions']){
+            const row=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');
+            term.textContent=form.querySelector(`label[for="group-${key}"]`).firstChild.textContent.trim();
+            value.textContent=String(data.details[key]??'')||'—';value.dir='auto';row.append(term,value);list.append(row);
+          }
+          preview.querySelector('[data-edit-group]').hidden=true;form.hidden=true;preview.hidden=false;preview.focus();
+          window.phuketShootersTrack?.('group_request_submit');return;
+        }
+        if(data.result==='accepted')summary.textContent=sendMessages.outdated;
+        else if(data.result==='changed'){submissionId=null;summary.textContent=sendMessages.changed;}
+        else summary.textContent=data.result==='partial'?sendMessages.partial:sendMessages.failed;
+      }catch{summary.textContent=sendMessages.failed;}
+      finally{busy=false;button.disabled=false;button.firstChild.textContent=sendMessages.send;controls.forEach(control=>control.disabled=false);}
+      summary.hidden=false;summary.focus();
     });
-    preview.querySelector('[data-edit-group]').addEventListener('click',()=>{preview.hidden=true;form.hidden=false;form.querySelector('[data-preview-group]').focus();});
+    preview.querySelector('[data-edit-group]').addEventListener('click',()=>{preview.hidden=true;form.hidden=false;button.focus();});
   });
   document.querySelectorAll('[data-visit-image]').forEach(image=>{const pool=JSON.parse(image.dataset.imagePool||'[]');if(!pool.length)return;const selected=pool[Math.floor(Math.random()*pool.length)];image.alt=selected.alt;image.src=selected.src;image.removeAttribute('data-image-pool');});
   document.querySelectorAll('[data-deferred-video]').forEach(video=>{const load=()=>{video.querySelectorAll('source[data-src]').forEach(source=>{source.src=source.dataset.src;source.removeAttribute('data-src');});video.load();};if(!('IntersectionObserver'in window)){load();return;}const observer=new IntersectionObserver(entries=>{if(!entries.some(entry=>entry.isIntersecting))return;observer.disconnect();load();},{rootMargin:'300px'});observer.observe(video);});

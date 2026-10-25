@@ -30,7 +30,7 @@ Generated files are written to `dist/` and are not committed.
 - `src/content/russian.js` — draft Russian page and shared copy
 - `src/articles/<slug>/<language>.md` — News and Events article text and localized metadata (source only; not deployed as raw Markdown)
 - `src/content/news.js` — multilingual Markdown article loader and metadata validation
-- `src/content/tourOperators.js` — draft operator information and group-request preview copy in English, Thai and Simplified Chinese
+- `src/content/tourOperators.js` — operator information and group-request copy in English, Thai and Simplified Chinese
 - `scripts/build.js` — dependency-free static generator and shared page templates
 - `worker/index.mjs` and `wrangler.jsonc` — opt-in consumer enquiry API alongside the Cloudflare Worker's static assets
 - `src/booking-hosted.mjs` and `scripts/booking-email.mjs` — hosted request handling and shared email validation/templates
@@ -39,7 +39,7 @@ Generated files are written to `dist/` and are not committed.
 - `.github/workflows/pages.yml` — repeatable GitHub Pages build and deployment
 - `CONTENT_REVIEW.md` — source inventory and decisions that need owner review
 
-Core routes are generated in English, Thai, Simplified Chinese, Arabic and Russian. English uses the requested paths (`/prices/`, `/book/`, etc.); the other languages use matching `/th/`, `/zh/`, `/ar/` and `/ru/` prefixes. The operator information and group-request preview routes exist only in English, Thai and Simplified Chinese; their language selectors have only those three options. Arabic pages use `dir="rtl"` and scoped right-to-left styles. Links and assets are automatically prefixed with `BASE_PATH`, so the same output works under a GitHub project URL.
+Core routes are generated in English, Thai, Simplified Chinese, Arabic and Russian. English uses the requested paths (`/prices/`, `/book/`, etc.); the other languages use matching `/th/`, `/zh/`, `/ar/` and `/ru/` prefixes. The operator information and group-request routes exist only in English, Thai and Simplified Chinese; their language selectors have only those three options. Arabic pages use `dir="rtl"` and scoped right-to-left styles. Links and assets are automatically prefixed with `BASE_PATH`, so the same output works under a GitHub project URL.
 
 The site ships generated HTML, one CSS file and a small progressive-enhancement script. It is not a client-side SPA and has no Wix runtime dependency.
 
@@ -83,11 +83,11 @@ The Google rating, review count, verification date and Business Profile link are
 
 Chinese, Arabic and Russian are available as draft prototypes.
 
-### Tour operators and group-request preview
+### Tour operators and group requests
 
-The homepage operator strip is disabled but retained in `scripts/build.js` for possible restoration. A quiet link beneath the footer social icons leads to `/groups-tour-operators/` in English, `/th/groups-tour-operators/` in Thai and `/zh/groups-tour-operators/` in Simplified Chinese. Each information page links to its separate `group-booking/` preview page. These pages are not generated in Arabic or Russian.
+The homepage operator strip is disabled but retained in `scripts/build.js` for possible restoration. A quiet link beneath the footer social icons leads to `/groups-tour-operators/` in English, `/th/groups-tour-operators/` in Thai and `/zh/groups-tour-operators/` in Simplified Chinese. Each information page links to its separate `group-booking/` page. These pages are not generated in Arabic or Russian.
 
-The group form is a **local-only interaction**: its button previews proposed visit details on the same page. It makes no network request, creates no reference, stores no data and confirms no booking. Visitors should not use it to contact the business; real phone and WhatsApp links remain available. Coach capacity (up to four) and a 1–4-hour visit time are explicitly provisional. See [docs/launch-checks.md](docs/launch-checks.md) for outstanding decisions and translation review.
+On an enabled Cloudflare deployment or configured local server, the group form sends a staff notification and a customer receipt using the same Resend settings and, on Cloudflare, the same test-email allowlist as individual enquiries. The receipt uses the selected English, Thai or Simplified Chinese language. Once both emails are accepted, the page shows the submitted details. Receipt is not booking confirmation or a parking reservation. On GitHub Pages or when sending is disabled, the form offers an in-page preview only. Coach capacity (up to four) and a 1–4-hour visit time remain provisional. See [docs/launch-checks.md](docs/launch-checks.md) for outstanding decisions and translation review.
 
 ### Add a News and Events item
 
@@ -119,18 +119,18 @@ npm run dev
 
 Open `http://127.0.0.1:8080/book/` (or your chosen `PORT`). With the local endpoint enabled, the button says “Send enquiry”; the server validates the fields, sends the business notification to `RESEND_TEST_INBOX`, and sends the acknowledgement to the **email entered in the form**. Only test with addresses you control. A confirmation screen displays the server-validated submitted details only if Resend accepts both messages; a partial or failed send leaves the form available to retry. Acceptance does not establish inbox delivery or confirm a booking. Check both inboxes and the Resend dashboard separately.
 
-The localhost server binds to `127.0.0.1`. The API key stays server-side; it is not written to generated assets. The group-request form remains unchanged and never sends. GitHub Pages cannot run this endpoint or read a local key file.
+The localhost server binds to `127.0.0.1`. The API key stays server-side; it is not written to generated assets. With Resend configured locally, the group form also sends to the same staff inbox and entered customer email. GitHub Pages cannot run these endpoints or read a local key file.
 
 ### Controlled Cloudflare Worker test
 
-The existing `phuket-shooters-prototype` Cloudflare deployment is a static-assets-only Worker, not a Pages project. `worker/index.mjs` adds a Worker script and `wrangler.jsonc` routes only `/api/booking-mode` and `/api/booking-enquiry` through it while preserving static asset delivery. The GitHub Pages deployment cannot serve these routes. The hosted endpoint is **off by default**. After deploying the Worker script, set the following in that Worker's runtime Variables and Secrets:
+The existing `phuket-shooters-prototype` Cloudflare deployment is a static-assets-only Worker, not a Pages project. `worker/index.mjs` adds a Worker script and `wrangler.jsonc` routes `/api/booking-mode`, `/api/booking-enquiry` and `/api/group-enquiry` through it while preserving static asset delivery. The GitHub Pages deployment cannot serve these routes. Hosted sending is **off by default**. After deploying the Worker script, set the following in that Worker's runtime Variables and Secrets:
 
 - `RESEND_API_KEY` — an encrypted secret, ideally a separate sending-only key for the verified `mail.phuket-shooters.com` domain;
 - `RESEND_TEST_INBOX` — the fixed staff/test notification email;
 - `BOOKING_ALLOWED_EMAILS` — comma-separated customer email addresses you control for this test;
 - `BOOKING_EMAIL_ENABLED` — set to `true` only when ready to test.
 
-`RESEND_FROM_EMAIL` is optional. Never place the key in the repository, generated assets, a Wrangler command-line argument or a screenshot. After deployment and configuration, check `/api/booking-mode` on the prototype URL: it should return `{"enabled":true}` before testing the form. Test only with an address in `BOOKING_ALLOWED_EMAILS`, and verify both actual inboxes. This is a controlled hosted test, not an unrestricted production endpoint. The current allowlist and same-origin check are not substitutes for public abuse protection; see `Resend-Setup.md`.
+`RESEND_FROM_EMAIL` is optional. Never place the key in the repository, generated assets, a Wrangler command-line argument or a screenshot. After deployment and configuration, check `/api/booking-mode` on the prototype URL: it should return `{"enabled":true}` before testing either form. Test only with an address in `BOOKING_ALLOWED_EMAILS`, and verify both actual inboxes. This is a controlled hosted test, not an unrestricted production endpoint. The current allowlist and same-origin check are not substitutes for public abuse protection; see `Resend-Setup.md`.
 
 `wrangler.jsonc` uses `keep_vars: true` because these test variables are managed in the Cloudflare dashboard from a phone. Future Git deployments must preserve them; the encrypted Resend key remains a dashboard secret and must never be copied into source control.
 

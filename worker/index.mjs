@@ -1,4 +1,4 @@
-import { bookingMode, handleBooking, methodNotAllowed } from '../src/booking-hosted.mjs';
+import { bookingMode, handleBooking, handleGroup, methodNotAllowed } from '../src/booking-hosted.mjs';
 
 export default {
   async fetch(request, env) {
@@ -8,6 +8,9 @@ export default {
     }
     if (pathname === '/api/booking-enquiry') {
       return request.method === 'POST' ? handleBooking({ request, env }) : methodNotAllowed();
+    }
+    if (pathname === '/api/group-enquiry') {
+      return request.method === 'POST' ? handleGroup({ request, env }) : methodNotAllowed();
     }
     return env.ASSETS.fetch(request);
   }

@@ -1,4 +1,4 @@
-// Draft stakeholder copy. The group form is a local-only demonstration.
+// Stakeholder copy for the group request flow.
 const tourOperators = {
   route: 'groups-tour-operators',
   requestRoute: 'groups-tour-operators/group-booking',
@@ -28,6 +28,7 @@ const tourOperators = {
       fields: { company: 'Company or organisation', name: 'Contact name', email: 'Email address', phone: 'Phone number', date: 'Preferred visit date', time: 'Approximate arrival time', visitors: 'Number of visitors', coaches: 'Number of coaches', activities: 'Activities or packages of interest', questions: 'Questions or requirements' },
       optional: 'Optional', timeHelp: 'All visit dates and times are local to Phuket.', phoneHelp: 'Add a phone number if you would like us to call about the arrangements.', notSure: 'Not sure yet',
       previewAction: 'Preview request', previewTitle: 'Request preview', previewText: 'No request has been sent, and no time has been reserved. Contact our team to discuss arrangements.', editAction: 'Edit details',
+      sendIntro: 'Tell us your preferred date, arrival time and group size. Send your request and our team will discuss the arrangements with you.', sendAction: 'Send group request', sending: 'Sending request…', receivedTitle: 'Group request received', receivedText: 'We received your request and emailed a copy to the address below. No visit or coach parking has been reserved; our team will contact you to discuss arrangements.', partial: 'Only one email was accepted. Please retry; no booking has been confirmed.', failed: 'The request could not be sent. Please try again or contact the team directly.', changed: 'The details changed. Please send the request again.', outdated: 'The server is out of date. Emails may already have been sent; check your inbox before retrying.',
       dateSummary: 'Preferred date', timeSummary: 'Approximate arrival (Phuket time)', visitorSummary: 'Visitors', coachSummary: 'Coaches',
       errors: { summary: 'Please check the highlighted fields.', required: 'Please complete this field.', email: 'Enter a valid email address.', date: 'Choose today or a future visit date in Phuket local time.', visitors: 'Enter a whole number of visitors greater than zero.', coaches: 'Enter zero or a positive whole number of coaches.' }
     },
@@ -49,6 +50,7 @@ const tourOperators = {
       fields: { company: 'บริษัทหรือองค์กร', name: 'ชื่อผู้ติดต่อ', email: 'อีเมล', phone: 'หมายเลขโทรศัพท์', date: 'วันที่ต้องการเข้าชม', time: 'เวลาที่คาดว่าจะมาถึง', visitors: 'จำนวนผู้เข้าร่วม', coaches: 'จำนวนรถโค้ช', activities: 'กิจกรรมหรือแพ็กเกจที่สนใจ', questions: 'คำถามหรือความต้องการเพิ่มเติม' },
       optional: 'ไม่บังคับ', timeHelp: 'วันที่และเวลาเข้าชมทั้งหมดเป็นเวลาท้องถิ่นภูเก็ต', phoneHelp: 'หากต้องการให้เราโทรพูดคุยรายละเอียด กรุณาระบุหมายเลขโทรศัพท์', notSure: 'ยังไม่แน่ใจ',
       previewAction: 'ดูตัวอย่างคำขอ', previewTitle: 'ตรวจสอบคำขอ', previewText: 'ยังไม่ได้ส่งคำขอหรือสำรองเวลา โปรดติดต่อทีมงานเพื่อพูดคุยรายละเอียด', editAction: 'แก้ไขรายละเอียด',
+      sendIntro: 'แจ้งวันที่ เวลาเดินทางมาถึง และจำนวนผู้เข้าร่วมที่ต้องการ ส่งคำขอแล้วทีมงานจะติดต่อเพื่อพูดคุยรายละเอียด', sendAction: 'ส่งคำขอสำหรับกรุ๊ป', sending: 'กำลังส่งคำขอ…', receivedTitle: 'ได้รับคำขอสำหรับกรุ๊ปแล้ว', receivedText: 'เราได้รับคำขอและส่งสำเนาไปยังอีเมลด้านล่างแล้ว ยังไม่มีการสำรองเวลาเข้าชมหรือที่จอดรถโค้ช ทีมงานจะติดต่อเพื่อพูดคุยรายละเอียด', partial: 'ระบบรับอีเมลเพียงฉบับเดียว โปรดลองอีกครั้ง ยังไม่มีการยืนยันการจอง', failed: 'ไม่สามารถส่งคำขอได้ โปรดลองอีกครั้งหรือติดต่อทีมงานโดยตรง', changed: 'รายละเอียดมีการเปลี่ยนแปลง โปรดส่งคำขออีกครั้ง', outdated: 'เซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า อีเมลอาจถูกส่งแล้ว โปรดตรวจสอบอีเมลก่อนลองอีกครั้ง',
       dateSummary: 'วันที่ต้องการเข้าชม', timeSummary: 'เวลาที่คาดว่าจะมาถึง (เวลาภูเก็ต)', visitorSummary: 'จำนวนผู้เข้าร่วม', coachSummary: 'จำนวนรถโค้ช',
       errors: { summary: 'กรุณาตรวจสอบช่องข้อมูลที่ระบุ', required: 'กรุณากรอกข้อมูลในช่องนี้', email: 'กรุณากรอกอีเมลให้ถูกต้อง', date: 'กรุณาเลือกวันเข้าชมเป็นวันนี้หรือวันถัดไปตามเวลาท้องถิ่นภูเก็ต', visitors: 'กรุณาระบุจำนวนผู้เข้าร่วมเป็นจำนวนเต็มมากกว่าศูนย์', coaches: 'กรุณาระบุจำนวนรถโค้ชเป็นศูนย์หรือจำนวนเต็มบวก' }
     },
@@ -70,6 +72,7 @@ const tourOperators = {
       fields: { company: '公司或机构', name: '联系人姓名', email: '电子邮箱', phone: '电话号码', date: '希望到访的日期', time: '预计抵达时间', visitors: '到访人数', coaches: '旅游大巴数量', activities: '感兴趣的活动或套餐', questions: '问题或其他需求' },
       optional: '选填', timeHelp: '所有到访日期和时间均为普吉岛当地时间。', phoneHelp: '如需我们致电沟通安排，请填写电话号码。', notSure: '尚未确定',
       previewAction: '预览申请', previewTitle: '核对申请', previewText: '申请尚未发送，也未预留时段。请联系团队商讨具体安排。', editAction: '修改信息',
+      sendIntro: '请填写希望到访的日期、抵达时间和人数。提交申请后，我们的团队会与您沟通具体安排。', sendAction: '发送团体申请', sending: '正在发送申请…', receivedTitle: '已收到团体申请', receivedText: '我们已收到申请，并将副本发送至下方邮箱。目前尚未预留到访时段或旅游大巴停车位；团队会与您联系商讨安排。', partial: '邮件服务只接受了一封邮件。请重试；预约尚未确认。', failed: '申请未能发送。请重试或直接联系团队。', changed: '申请内容已更改，请重新发送。', outdated: '服务器仍在运行旧版本。邮件可能已发出。请先检查邮箱，再重试。',
       dateSummary: '希望到访日期', timeSummary: '预计抵达时间（普吉岛时间）', visitorSummary: '到访人数', coachSummary: '旅游大巴数量',
       errors: { summary: '请检查标出的项目。', required: '请填写此项。', email: '请输入有效的电子邮箱地址。', date: '请按普吉岛当地时间选择今天或之后的到访日期。', visitors: '到访人数须为大于零的整数。', coaches: '旅游大巴数量须为零或正整数。' }
     }

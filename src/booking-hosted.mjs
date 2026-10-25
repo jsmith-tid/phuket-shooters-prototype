@@ -1,4 +1,4 @@
-import { createBookingService, validate } from '../scripts/booking-email.mjs';
+import { createBookingService, createGroupService, validate, validateGroup } from '../scripts/booking-email.mjs';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const json = (status, body) => new Response(JSON.stringify(body), {
@@ -53,14 +53,14 @@ async function readJson(request) {
   } catch { return { status: 400, body: { result: 'invalid' } }; }
 }
 
-export async function handleBooking(context, fetcher = fetch) {
+async function handleEnquiry(context, fetcher, validateInput, createService) {
   const { request } = context;
   const config = bookingConfig(context.env);
   if (!config) return json(503, { result: 'unavailable' });
   if (request.headers.get('origin') !== new URL(request.url).origin) return json(403, { result: 'forbidden' });
   const parsed = await readJson(request);
   if ('status' in parsed) return json(parsed.status, parsed.body);
-  const details = validate(parsed.input);
+  const details = validateInput(parsed.input);
   if (!details) return json(400, { result: 'invalid' });
   if (!config.allowedEmails.includes(details.email.toLowerCase())) return json(403, { result: 'forbidden' });
   const send = async (email, idempotencyKey) => {
@@ -74,7 +74,10 @@ export async function handleBooking(context, fetcher = fetch) {
     return response.json();
   };
   // Resend's per-email idempotency keys protect retries across Worker instances.
-  const submit = createBookingService({ send, inbox: config.inbox, sender: config.sender });
+  const submit = createService({ send, inbox: config.inbox, sender: config.sender });
   const result = await submit(parsed.input);
   return json(result.status, result.body);
 }
+
+export const handleBooking = (context, fetcher = fetch) => handleEnquiry(context, fetcher, validate, createBookingService);
+export const handleGroup = (context, fetcher = fetch) => handleEnquiry(context, fetcher, validateGroup, createGroupService);
