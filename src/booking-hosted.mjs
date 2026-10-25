@@ -6,14 +6,30 @@ const json = (status, body) => new Response(JSON.stringify(body), {
   headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 });
 
-export function bookingConfig(env = {}) {
+function bookingChecks(env = {}) {
   const inbox = env.RESEND_TEST_INBOX?.trim();
   const allowedEmails = (env.BOOKING_ALLOWED_EMAILS || '').split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
-  if (env.BOOKING_EMAIL_ENABLED !== 'true' || !env.RESEND_API_KEY?.trim() || !emailPattern.test(inbox || '') || !allowedEmails.length || !allowedEmails.every(email => emailPattern.test(email))) return null;
+  return {
+    enabledFlag: env.BOOKING_EMAIL_ENABLED === 'true',
+    keyPresent: Boolean(env.RESEND_API_KEY?.trim()),
+    inboxValid: emailPattern.test(inbox || ''),
+    allowedEmailsValid: allowedEmails.length > 0 && allowedEmails.every(email => emailPattern.test(email))
+  };
+}
+
+export function bookingConfig(env = {}) {
+  const checks = bookingChecks(env);
+  if (!Object.values(checks).every(Boolean)) return null;
+  const inbox = env.RESEND_TEST_INBOX.trim();
+  const allowedEmails = env.BOOKING_ALLOWED_EMAILS.split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
   return { apiKey: env.RESEND_API_KEY.trim(), inbox, allowedEmails, sender: env.RESEND_FROM_EMAIL?.trim() || undefined };
 }
 
-export const bookingMode = ({ env }) => json(200, { enabled: Boolean(bookingConfig(env)) });
+export const bookingMode = ({ request, env }) => {
+  const enabled = Boolean(bookingConfig(env));
+  const diagnose = request && new URL(request.url).searchParams.get('diagnose') === '1';
+  return json(200, { enabled, ...(diagnose ? { checks: bookingChecks(env) } : {}) });
+};
 export const methodNotAllowed = () => json(405, { result: 'method_not_allowed' });
 
 async function readJson(request) {
