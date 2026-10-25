@@ -126,7 +126,7 @@ The localhost server binds to `127.0.0.1`. The API key stays server-side; it is 
 The existing `phuket-shooters-prototype` Cloudflare deployment is a static-assets-only Worker, not a Pages project. `worker/index.mjs` adds a Worker script and `wrangler.jsonc` routes `/api/booking-mode`, `/api/booking-enquiry` and `/api/group-enquiry` through it while preserving static asset delivery. The GitHub Pages deployment cannot serve these routes. Hosted sending is **off by default**. After deploying the Worker script, set the following in that Worker's runtime Variables and Secrets:
 
 - `RESEND_API_KEY` — an encrypted secret, ideally a separate sending-only key for the verified `mail.phuket-shooters.com` domain;
-- `RESEND_TEST_INBOX` — the fixed staff/test notification email;
+- `BOOKING_STAFF_INBOX` — the fixed staff notification email for both forms; the older `RESEND_TEST_INBOX` remains a fallback during controlled testing;
 - `BOOKING_ALLOWED_EMAILS` — comma-separated customer email addresses you control for this test;
 - `BOOKING_EMAIL_ENABLED` — set to `true` only when ready to test.
 
@@ -134,15 +134,15 @@ The existing `phuket-shooters-prototype` Cloudflare deployment is a static-asset
 
 ### Turnstile trial on the hosted prototype
 
-The Worker can require Cloudflare Turnstile on both enquiry forms while keeping the test-email allowlist. This is initially **off** so deploying the code does not interrupt existing tests. To activate it, create a **Managed** Turnstile widget for `phuket-shooters.com` in the Cloudflare account, then add these to the `phuket-shooters-prototype` Worker's Variables and Secrets:
+The configured hosted prototype uses Cloudflare Turnstile on both enquiry forms while keeping the test-email allowlist. To configure another deployment, create a **Managed** Turnstile widget for `phuket-shooters.com` in the Cloudflare account, then add these to the Worker's Variables and Secrets:
 
 - `TURNSTILE_SITE_KEY` — public site key, as a plain-text variable;
 - `TURNSTILE_SECRET_KEY` — private secret key, as an encrypted secret;
 - `TURNSTILE_ENABLED` — plain-text variable set to `true` after both keys are present.
 
-The root hostname also authorizes `www.phuket-shooters.com` if it is used. The browser receives only the public site key from `/api/booking-mode`; the secret stays in the Worker. When all three settings and the rate-limit binding are present, the mode response includes `turnstileSiteKey`. If trial settings are incomplete, sending is disabled until corrected. The rate-limit binding is declared in `wrangler.jsonc` with an approximate threshold of 10 attempts per submitted email and form type per minute in each Cloudflare location. It is deliberately keyed by email during the allowlisted mobile trial, since many visitors can share an IP. This is not a complete public abuse policy.
+The root hostname also authorizes `www.phuket-shooters.com` if it is used. The browser receives only the public site key from `/api/booking-mode`; the secret stays in the Worker. When Turnstile is enabled, both rate-limit bindings must also be present or sending is disabled. `wrangler.jsonc` defines approximate ceilings of **4 attempts per entered email** and **12 attempts per client IP** per minute, each shared across both forms and counted separately in each Cloudflare location. The IP comes from Cloudflare's `CF-Connecting-IP` header; a missing header fails closed. The IP ceiling catches attempts that rotate email addresses, but shared hotel Wi-Fi and mobile networks can also share an IP, so keep the phone and WhatsApp fallback visible. The allowlist remains enabled. See [docs/booking-abuse-policy.md](docs/booking-abuse-policy.md) for the release checks.
 
-Test both forms with an allowlisted address. A successful send must show the confirmation and deliver both emails. An invalid or missing challenge must send no email. If the widget fails to load, the form preserves the entered details and the visitor can use the phone or WhatsApp links. Keep the allowlist while assessing challenge failures on mobile devices and browsers. Cloudflare documents that Turnstile is not supported for visitors in mainland China; plan an alternative enquiry route before unrestricted release to that audience.
+Test both forms with an allowlisted address. A successful send must show the confirmation and deliver both emails. An invalid or missing challenge must send no email. If the widget fails to load, the form preserves the entered details and the visitor can use the phone or WhatsApp links. Keep the allowlist while assessing challenge failures on mobile devices and browsers.
 
 `wrangler.jsonc` uses `keep_vars: true` because these test variables are managed in the Cloudflare dashboard from a phone. Future Git deployments must preserve them; the encrypted Resend key remains a dashboard secret and must never be copied into source control.
 

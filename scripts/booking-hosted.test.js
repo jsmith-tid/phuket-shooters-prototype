@@ -17,7 +17,7 @@ const input = () => ({ submissionId: randomUUID(), people: '2', date: today(), s
 const context = (payload, env = enabled, headers = {}) => ({
   env,
   request: new Request(`${origin}/api/booking-enquiry`, {
-    method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', ...headers },
+    method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.7', ...headers },
     body: typeof payload === 'string' ? payload : JSON.stringify(payload)
   })
 });
@@ -29,6 +29,17 @@ test('hosted mode is disabled until every test setting is present', async () => 
   assert.equal(bookingConfig({ ...enabled, RESEND_API_KEY: '' }), null);
   assert.deepEqual(await (await bookingMode({ env: enabled })).json(), { enabled: true });
   assert.deepEqual(await (await bookingMode({ env: {} })).json(), { enabled: false });
+  assert.equal(bookingConfig({ ...enabled, BOOKING_STAFF_INBOX: 'invalid' }), null);
+});
+
+test('named staff inbox takes precedence over the legacy test inbox', async () => {
+  const { handleBooking } = await hostedModule;
+  const sent = [];
+  const env = { ...enabled, BOOKING_STAFF_INBOX: 'bookings@example.org' };
+  const response = await handleBooking(context(input(), env), async (_url, options) => { sent.push(JSON.parse(options.body)); return Response.json({ id: String(sent.length) }); });
+  assert.equal(response.status, 200);
+  assert.deepEqual(sent.map(email => email.to), [['bookings@example.org'], ['first@example.org']]);
+  assert.equal(sent[1].reply_to, 'bookings@example.org');
 });
 
 test('valid hosted request sends two emails and returns submitted details', async () => {
@@ -42,6 +53,8 @@ test('valid hosted request sends two emails and returns submitted details', asyn
   assert.equal(body.result, 'accepted');
   assert.equal(body.details.email, 'first@example.org');
   assert.deepEqual(sent.map(item => JSON.parse(item.options.body).to), [['staff@example.org'], ['first@example.org']]);
+  assert.deepEqual(sent.map(item => JSON.parse(item.options.body).tags.find(tag => tag.name === 'recipient_role').value), ['staff', 'customer']);
+  assert.ok(sent.every(item => JSON.parse(item.options.body).tags.find(tag => tag.name === 'submission_id')));
   assert.ok(sent.every(item => item.url === 'https://api.resend.com/emails' && item.options.headers.Authorization === 'Bearer test-key'));
   assert.notEqual(sent[0].options.headers['Idempotency-Key'], sent[1].options.headers['Idempotency-Key']);
 });
@@ -107,22 +120,26 @@ test('hosted group endpoint uses the existing inbox and allowlist', async () => 
   assert.equal(sent.length, 2);
 });
 
-test('Turnstile mode requires both keys and a rate limiter, and exposes only the public key', async () => {
+test('Turnstile mode requires both rate limiters and exposes only the public key', async () => {
   const { bookingConfig, bookingMode } = await hostedModule;
   const limiter = { limit: async () => ({ success: true }) };
   assert.equal(bookingConfig({ ...enabled, TURNSTILE_ENABLED: 'true' }), null);
   assert.equal(bookingConfig({ ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private' }), null);
-  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private', BOOKING_RATE_LIMITER: limiter };
+  const partlyConfigured = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private', BOOKING_RATE_LIMITER: limiter };
+  assert.equal(bookingConfig(partlyConfigured), null);
+  assert.deepEqual(await (await bookingMode({ env: partlyConfigured })).json(), { enabled: false });
+  const env = { ...partlyConfigured, BOOKING_IP_RATE_LIMITER: limiter };
   assert.deepEqual(await (await bookingMode({ env })).json(), { enabled: true, turnstileSiteKey: 'public' });
   assert.ok(!(await (await bookingMode({ env })).text()).includes('private'));
 });
 
-test('both enquiry endpoints verify Turnstile before sending and rate-limit by email', async () => {
+test('both enquiry endpoints verify Turnstile and share IP and email ceilings', async () => {
   const { handleBooking, handleGroup } = await hostedModule;
-  const keys = [];
+  const emailKeys = [], ipKeys = [];
   let allowed = true, valid = true, sends = 0;
   const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private',
-    BOOKING_RATE_LIMITER: { limit: async ({ key }) => { keys.push(key); return { success: allowed }; } } };
+    BOOKING_RATE_LIMITER: { limit: async ({ key }) => { emailKeys.push(key); return { success: allowed }; } },
+    BOOKING_IP_RATE_LIMITER: { limit: async ({ key }) => { ipKeys.push(key); return { success: true }; } } };
   const fakeFetch = async (url, options) => {
     if (url.includes('siteverify')) {
       assert.equal(options.body.get('secret'), 'private');
@@ -142,18 +159,58 @@ test('both enquiry endpoints verify Turnstile before sending and rate-limit by e
   assert.equal((await handleBooking(context(consumer, env), fakeFetch)).status, 200);
   assert.equal(sends, 2);
   allowed = false;
-  assert.equal((await handleBooking(context({ ...consumer, submissionId: randomUUID() }, env), fakeFetch)).status, 429);
+  const limited = await handleBooking(context({ ...consumer, submissionId: randomUUID() }, env), fakeFetch);
+  assert.equal(limited.status, 429);
+  assert.equal(limited.headers.get('retry-after'), '60');
   assert.equal(sends, 2);
   allowed = true;
   const group = { submissionId: randomUUID(), lang: 'zh', company: 'Tour operator', name: 'Agent', email: 'first@example.org', phone: '', date: today(), time: '', visitors: '40', coaches: '1', activities: '', questions: '', turnstileToken: 'token' };
   assert.equal((await handleGroup(context(group, env), fakeFetch)).status, 200);
   assert.equal(sends, 4);
-  assert.deepEqual(keys.slice(-2), ['consumer_enquiry:first@example.org', 'group_enquiry:first@example.org']);
+  assert.deepEqual(emailKeys.slice(-2), ['booking:email:first@example.org', 'booking:email:first@example.org']);
+  assert.ok(ipKeys.every(key => key === 'booking:ip:203.0.113.7'));
+});
+
+test('changing customer email cannot bypass the shared IP ceiling', async () => {
+  const { handleBooking } = await hostedModule;
+  const ipKeys = [];
+  let allowed = true, sends = 0;
+  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private',
+    BOOKING_RATE_LIMITER: { limit: async () => ({ success: true }) },
+    BOOKING_IP_RATE_LIMITER: { limit: async ({ key }) => { ipKeys.push(key); return { success: allowed }; } } };
+  const fakeFetch = async url => {
+    if (url.includes('siteverify')) return Response.json({ success: true, hostname: 'prototype.example', action: 'consumer_enquiry' });
+    sends++;
+    return Response.json({ id: String(sends) });
+  };
+  const first = { ...input(), turnstileToken: 'token' };
+  assert.equal((await handleBooking(context(first, env), fakeFetch)).status, 200);
+  assert.equal(sends, 2);
+  allowed = false;
+  const second = { ...input(), email: 'second@example.org', turnstileToken: 'token' };
+  const blocked = await handleBooking(context(second, env), fakeFetch);
+  assert.equal(blocked.status, 429);
+  assert.equal(blocked.headers.get('retry-after'), '60');
+  assert.equal(sends, 2);
+  assert.deepEqual(ipKeys, ['booking:ip:203.0.113.7', 'booking:ip:203.0.113.7']);
+  assert.equal((await handleBooking(context(first, env, { 'CF-Connecting-IP': '' }), fakeFetch)).status, 503);
+  assert.equal(sends, 2);
+});
+
+test('an unavailable IP limiter fails closed before Turnstile or email', async () => {
+  const { handleBooking } = await hostedModule;
+  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private',
+    BOOKING_RATE_LIMITER: { limit: async () => ({ success: true }) },
+    BOOKING_IP_RATE_LIMITER: { limit: async () => { throw Error('simulated limiter outage'); } } };
+  let fetches = 0;
+  const response = await handleBooking(context({ ...input(), turnstileToken: 'token' }, env), async () => { fetches++; return Response.json({ id: 'unexpected' }); });
+  assert.equal(response.status, 503);
+  assert.equal(fetches, 0);
 });
 
 test('Turnstile hostname or action mismatch and verification outage send no email', async () => {
   const { handleBooking } = await hostedModule;
-  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private', BOOKING_RATE_LIMITER: { limit: async () => ({ success: true }) } };
+  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private', BOOKING_RATE_LIMITER: { limit: async () => ({ success: true }) }, BOOKING_IP_RATE_LIMITER: { limit: async () => ({ success: true }) } };
   const payload = { ...input(), turnstileToken: 'token' };
   let sends = 0;
   const mismatch = async () => Response.json({ success: true, hostname: 'other.example', action: 'consumer_enquiry' });

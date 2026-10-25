@@ -3,12 +3,14 @@
   "main": "./worker/index.mjs",
   "compatibility_date": "2026-10-25",
   "keep_vars": true,
+  "observability": { "enabled": true, "head_sampling_rate": 1, "issues": { "enabled": true } },
   "ratelimits": [
-    { "name": "BOOKING_RATE_LIMITER", "namespace_id": "2026102501", "simple": { "limit": 10, "period": 60 } }
+    { "name": "BOOKING_RATE_LIMITER", "namespace_id": "2026102501", "simple": { "limit": 4, "period": 60 } },
+    { "name": "BOOKING_IP_RATE_LIMITER", "namespace_id": "2026102502", "simple": { "limit": 12, "period": 60 } }
   ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/booking-mode", "/api/booking-enquiry", "/api/group-enquiry"]
+    "run_worker_first": ["/api/booking-mode", "/api/booking-enquiry", "/api/group-enquiry", "/api/resend-webhook"]
   }
 }

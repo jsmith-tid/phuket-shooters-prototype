@@ -6,38 +6,72 @@
   languageButton?.addEventListener('click',()=>{const open=languageButton.getAttribute('aria-expanded')==='true';languageButton.setAttribute('aria-expanded',String(!open));languageMenu.hidden=open;});
   document.addEventListener('click',e=>{if(language&&!language.contains(e.target)){languageButton.setAttribute('aria-expanded','false');languageMenu.hidden=true;}});
   const securityCopy={
-    en:{checking:'Checking your browser…',wait:'Please complete the security check before sending.',error:'The security check could not finish. Please retry or contact us directly.',limited:'Too many requests just now. Please wait a minute before trying again.'},
-    th:{checking:'กำลังตรวจสอบเบราว์เซอร์…',wait:'กรุณาทำการตรวจสอบความปลอดภัยก่อนส่ง',error:'ไม่สามารถตรวจสอบความปลอดภัยได้ โปรดลองอีกครั้งหรือติดต่อเราโดยตรง',limited:'มีคำขอมากเกินไปในขณะนี้ โปรดรอสักครู่แล้วลองอีกครั้ง'},
-    zh:{checking:'正在检查浏览器…',wait:'发送前请完成安全验证。',error:'安全验证未能完成。请重试或直接联系我们。',limited:'当前请求过多。请稍等一分钟后重试。'},
-    ar:{checking:'جارٍ التحقق من المتصفح…',wait:'يرجى إكمال التحقق الأمني قبل الإرسال.',error:'تعذر إكمال التحقق الأمني. يرجى المحاولة مجددًا أو التواصل معنا مباشرة.',limited:'هناك طلبات كثيرة الآن. يرجى الانتظار دقيقة ثم المحاولة مجددًا.'},
-    ru:{checking:'Проверяем браузер…',wait:'Пройдите проверку безопасности перед отправкой.',error:'Не удалось завершить проверку. Повторите попытку или свяжитесь с нами напрямую.',limited:'Сейчас слишком много запросов. Подождите минуту и попробуйте снова.'}
+    en:{checking:'Checking your browser…',wait:'Please complete the security check before sending.',error:'The security check could not finish. Try sending again, or contact us directly.',limited:'Too many requests right now. Please wait a minute and try again, or contact us by phone or WhatsApp.'},
+    th:{checking:'กำลังตรวจสอบเบราว์เซอร์…',wait:'กรุณาทำการตรวจสอบความปลอดภัยก่อนส่ง',error:'ไม่สามารถตรวจสอบความปลอดภัยได้ โปรดลองส่งอีกครั้งหรือติดต่อเราโดยตรง',limited:'มีคำขอมากเกินไปในขณะนี้ โปรดรอสักครู่แล้วลองอีกครั้ง หรือติดต่อทางโทรศัพท์หรือ WhatsApp'},
+    zh:{checking:'正在检查浏览器…',wait:'发送前请完成安全验证。',error:'安全验证未能完成。请再次尝试发送，或直接联系我们。',limited:'当前请求过多。请稍等一分钟后重试，或通过电话或 WhatsApp 联系我们。'},
+    ar:{checking:'جارٍ التحقق من المتصفح…',wait:'يرجى إكمال التحقق الأمني قبل الإرسال.',error:'تعذر إكمال التحقق الأمني. حاول الإرسال مجددًا أو تواصل معنا مباشرة.',limited:'هناك طلبات كثيرة الآن. انتظر دقيقة ثم حاول مجددًا، أو تواصل معنا هاتفيًا أو عبر واتساب.'},
+    ru:{checking:'Проверяем браузер…',wait:'Пройдите проверку безопасности перед отправкой.',error:'Не удалось завершить проверку. Попробуйте отправить ещё раз или свяжитесь с нами напрямую.',limited:'Сейчас слишком много запросов. Подождите минуту и попробуйте снова или свяжитесь с нами по телефону или через WhatsApp.'}
   };
   const security=securityCopy[document.documentElement.lang.split('-')[0]]||securityCopy.en;
+  const emailPattern=/^[^\s@.<>()[\],;:"\\]+(?:\.[^\s@.<>()[\],;:"\\]+)*@(?:[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?\.)+(?:[\p{L}]{2,63}|xn--[a-z0-9-]{2,59})$/iu;
+  const normalisePhoneDigits=value=>value.replace(/[٠-٩۰-۹๐-๙０-９]/gu,digit=>{const code=digit.codePointAt(0),base=code>=0xff10?0xff10:code>=0x0e50?0x0e50:code>=0x06f0?0x06f0:0x0660;return String(code-base);});
+  const validPhone=value=>{const digits=normalisePhoneDigits(value);return /^\+?[0-9().\-\s]+$/.test(digits)&&(digits.match(/[0-9]/g)||[]).length>=6&&(digits.match(/[0-9]/g)||[]).length<=20;};
+  const phuketToday=()=>{const parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(part=>[part.type,part.value]));return `${parts.year}-${parts.month}-${parts.day}`;};
+  const inputCopy={
+    en:{email:'Enter a valid email address.',phone:'Enter a phone number with 6–20 digits, using only common separators.',time:'Choose an end time later than the start time.'},
+    th:{email:'กรุณากรอกอีเมลให้ถูกต้อง',phone:'กรุณาระบุหมายเลขโทรศัพท์ 6–20 หลัก โดยใช้เฉพาะเครื่องหมายคั่นทั่วไป',time:'กรุณาเลือกเวลาสิ้นสุดหลังเวลาเริ่ม'},
+    zh:{email:'请输入有效的电子邮箱地址。',phone:'请输入含 6–20 位数字的电话号码，仅使用常见分隔符。',time:'结束时间须晚于开始时间。'},
+    ar:{email:'أدخل عنوان بريد إلكتروني صالحًا.',phone:'أدخل رقم هاتف يتكون من 6 إلى 20 رقمًا باستخدام فواصل شائعة فقط.',time:'اختر وقت انتهاء بعد وقت البدء.'},
+    ru:{email:'Укажите корректный адрес электронной почты.',phone:'Укажите номер телефона из 6–20 цифр; допускаются обычные разделители.',time:'Время окончания должно быть позже времени начала.'}
+  };
+  const revealPanel=panel=>{
+    panel.focus({preventScroll:true});
+    requestAnimationFrame(()=>{
+      const headerHeight=document.querySelector('.site-header')?.getBoundingClientRect().height||0;
+      const top=window.scrollY+panel.getBoundingClientRect().top-headerHeight-16;
+      const root=document.documentElement,previous=root.style.scrollBehavior;
+      root.style.scrollBehavior='auto';
+      window.scrollTo(0,Math.max(0,top));
+      requestAnimationFrame(()=>{root.style.scrollBehavior=previous;});
+    });
+  };
   let turnstileScript;
   const loadTurnstile=()=>turnstileScript||=(new Promise((resolve,reject)=>{
     if(window.turnstile){resolve(window.turnstile);return;}
     const script=document.createElement('script');script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.async=true;script.defer=true;
     script.onload=()=>window.turnstile?resolve(window.turnstile):reject(Error('Turnstile unavailable'));
     script.onerror=()=>reject(Error('Turnstile unavailable'));document.head.append(script);
-  }));
+  }).catch(error=>{turnstileScript=null;throw error;}));
   const attachChallenge=(form,siteKey,button,action)=>{
     if(!siteKey)return null;
     const panel=document.createElement('div'),widget=document.createElement('div'),status=document.createElement('p');
     panel.className='form-security';panel.tabIndex=-1;status.className='form-security__status';status.setAttribute('role','status');status.textContent=security.checking;
     panel.append(widget,status);button.before(panel);
     let token='',widgetId=null,api=null,loadFailed=false;
-    loadTurnstile().then(turnstile=>{
+    const start=()=>{loadFailed=false;status.textContent=security.checking;loadTurnstile().then(turnstile=>{
       api=turnstile;widgetId=api.render(widget,{sitekey:siteKey,action,appearance:'always',size:'flexible',language:document.documentElement.lang.toLowerCase(),
         callback:value=>{token=value;status.textContent='';},
         'expired-callback':()=>{token='';status.textContent=security.wait;},
         'error-callback':()=>{token='';status.textContent=security.error;},
         'timeout-callback':()=>{token='';status.textContent=security.wait;}});
-    }).catch(()=>{loadFailed=true;status.textContent=security.error;});
-    return {getToken:()=>token,focus:()=>{status.textContent=loadFailed?security.error:api?security.wait:security.checking;panel.focus();},reset:()=>{token='';if(api&&widgetId!==null)api.reset(widgetId);}};
+    }).catch(()=>{loadFailed=true;status.textContent=security.error;});};
+    start();
+    return {getToken:()=>token,focus:()=>{if(loadFailed)start();else status.textContent=api?security.wait:security.checking;revealPanel(panel);},reset:()=>{token='';if(api&&widgetId!==null)api.reset(widgetId);}};
   };
   const bookingForm=document.querySelector('[data-prototype-form]');
   if(bookingForm){
     const messages=JSON.parse(bookingForm.dataset.testMessages||'{}'),button=bookingForm.querySelector('button[type="submit"]'),result=bookingForm.querySelector('.form-result');
+    const inputMessages=inputCopy[document.documentElement.lang.split('-')[0]]||inputCopy.en;
+    const phone=bookingForm.elements.namedItem('phone'),email=bookingForm.elements.namedItem('email'),start=bookingForm.elements.namedItem('start'),end=bookingForm.elements.namedItem('end'),date=bookingForm.elements.namedItem('date');
+    date.min=phuketToday();
+    for(const control of [phone,email,start,end])control.addEventListener('input',()=>control.setCustomValidity(''));
+    const validateInputs=()=>{
+      phone.setCustomValidity(phone.value.trim()&&!validPhone(phone.value.trim())?inputMessages.phone:'');
+      email.setCustomValidity(email.value.trim()&&!emailPattern.test(email.value.trim())?inputMessages.email:'');
+      end.setCustomValidity(start.value&&end.value&&start.value>=end.value?inputMessages.time:'');
+      date.min=phuketToday();
+      return bookingForm.reportValidity();
+    };
     let testEnabled=false,submissionId=null,busy=false,challenge=null;
     fetch('/api/booking-mode',{cache:'no-store'}).then(response=>response.ok?response.json():null).then(mode=>{
       if(mode?.enabled){testEnabled=true;button.firstChild.textContent=messages.send;challenge=attachChallenge(bookingForm,mode.turnstileSiteKey,button,'consumer_enquiry');}
@@ -45,9 +79,9 @@
     bookingForm.addEventListener('input',()=>{if(!busy)submissionId=null;});
     bookingForm.addEventListener('submit',async event=>{
       event.preventDefault();
-      if(!testEnabled){result.hidden=false;result.focus();return;}
+      if(!testEnabled){result.hidden=false;revealPanel(result);return;}
       if(busy)return;
-      if(!bookingForm.reportValidity())return;
+      if(!validateInputs())return;
       if(challenge&&!challenge.getToken()){challenge.focus();return;}
       busy=true;button.disabled=true;button.firstChild.textContent=messages.sending;result.hidden=true;
       submissionId ||= crypto.randomUUID();
@@ -75,7 +109,7 @@
             row.append(term,value);detailsList.append(row);
           }
           confirmation.querySelector('a').before(detailsHeading,detailsList);
-          bookingForm.hidden=true;confirmation.hidden=false;confirmation.focus();
+          bookingForm.hidden=true;confirmation.hidden=false;revealPanel(confirmation);
           window.phuketShootersTrack?.('booking_submit');
           return;
         }
@@ -83,7 +117,7 @@
         else result.textContent=data.result==='partial'?messages.partial:data.result==='rate_limited'?security.limited:data.result?.startsWith('challenge_')?security.error:messages.failed;
       }catch{result.textContent=messages.failed;}
       finally{busy=false;button.disabled=false;button.firstChild.textContent=messages.send;controls.forEach(control=>control.disabled=false);challenge?.reset();}
-      result.hidden=false;result.focus();
+      result.hidden=false;revealPanel(result);
     });
   }
   document.querySelectorAll('[data-demo-group-form]').forEach(form=>{
@@ -98,6 +132,7 @@
     }).catch(()=>{});
     const input=name=>form.elements.namedItem(name);
     const groupFields=['company','name','email','phone','date','time','visitors','coaches','activities','questions'];
+    input('date').min=phuketToday();
     const showError=(name,message)=>{const field=input(name),error=form.querySelector(`#group-${name}-error`);field.setAttribute('aria-invalid','true');field.setAttribute('aria-describedby',error.id);error.textContent=message;error.hidden=false;};
     const clearError=name=>{const field=input(name),error=form.querySelector(`#group-${name}-error`);field.removeAttribute('aria-invalid');field.removeAttribute('aria-describedby');error.textContent='';error.hidden=true;};
     groupFields.forEach(name=>input(name).addEventListener('input',()=>{clearError(name);if(!busy)submissionId=null;}));
@@ -106,13 +141,14 @@
       groupFields.forEach(clearError);
       const invalid=[];
       for(const name of ['name','email','date','visitors']) if(!values[name]) invalid.push([name,messages.required]);
-      if(values.email && input('email').validity.typeMismatch) invalid.push(['email',messages.email]);
-      const dateParts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(part=>[part.type,part.value]));
-      const todayInPhuket=`${dateParts.year}-${dateParts.month}-${dateParts.day}`;
-      if(values.date && values.date<todayInPhuket) invalid.push(['date',messages.date]);
-      if(values.visitors && (!/^\d+$/.test(values.visitors)||!Number.isSafeInteger(Number(values.visitors))||Number(values.visitors)<1||Number(values.visitors)>10000)) invalid.push(['visitors',messages.visitors]);
-      if(values.coaches && (!/^\d+$/.test(values.coaches)||!Number.isSafeInteger(Number(values.coaches))||Number(values.coaches)>99)) invalid.push(['coaches',messages.coaches]);
-      if(invalid.length){for(const [name,message] of invalid)showError(name,message);summary.textContent=messages.summary;summary.hidden=false;summary.focus();return null;}
+      if(values.email&&!emailPattern.test(values.email))invalid.push(['email',messages.email]);
+      if(values.phone&&!validPhone(values.phone))invalid.push(['phone',messages.phone]);
+      input('date').min=phuketToday();
+      if(values.date&&values.date<input('date').min)invalid.push(['date',messages.date]);
+      if(values.time&&(values.time<'09:00'||values.time>='18:00'))invalid.push(['time',messages.time]);
+      if(values.visitors&&(!/^\d+$/.test(values.visitors)||!Number.isSafeInteger(Number(values.visitors))||Number(values.visitors)<1||Number(values.visitors)>999))invalid.push(['visitors',messages.visitors]);
+      if(values.coaches&&(!/^\d+$/.test(values.coaches)||!Number.isSafeInteger(Number(values.coaches))||Number(values.coaches)>20))invalid.push(['coaches',messages.coaches]);
+      if(invalid.length){for(const [name,message] of invalid)showError(name,message);summary.textContent=messages.summary;summary.hidden=false;revealPanel(summary);return null;}
       summary.hidden=true;
       return values;
     };
@@ -123,7 +159,7 @@
       preview.querySelector('[data-preview-time]').textContent=values.time;
       preview.querySelector('[data-preview-visitors]').textContent=new Intl.NumberFormat(form.dataset.locale).format(Number(values.visitors));
       preview.querySelector('[data-preview-coaches]').textContent=new Intl.NumberFormat(form.dataset.locale).format(Number(values.coaches||0));
-      form.hidden=true;preview.hidden=false;preview.focus();
+      form.hidden=true;preview.hidden=false;revealPanel(preview);
     };
     button.addEventListener('click',()=>{if(!sendEnabled){const values=validateValues();if(values)showPreview(values);}});
     form.addEventListener('submit',async event=>{
@@ -145,7 +181,7 @@
             term.textContent=form.querySelector(`label[for="group-${key}"]`).firstChild.textContent.trim();
             value.textContent=String(data.details[key]??'')||'—';value.dir='auto';row.append(term,value);list.append(row);
           }
-          preview.querySelector('[data-edit-group]').hidden=true;form.hidden=true;preview.hidden=false;preview.focus();
+          preview.querySelector('[data-edit-group]').hidden=true;form.hidden=true;preview.hidden=false;revealPanel(preview);
           window.phuketShootersTrack?.('group_request_submit');return;
         }
         if(data.result==='accepted')summary.textContent=sendMessages.outdated;
@@ -153,7 +189,7 @@
         else summary.textContent=data.result==='partial'?sendMessages.partial:data.result==='rate_limited'?security.limited:data.result?.startsWith('challenge_')?security.error:sendMessages.failed;
       }catch{summary.textContent=sendMessages.failed;}
       finally{busy=false;button.disabled=false;button.firstChild.textContent=sendMessages.send;controls.forEach(control=>control.disabled=false);challenge?.reset();}
-      summary.hidden=false;summary.focus();
+      summary.hidden=false;revealPanel(summary);
     });
     preview.querySelector('[data-edit-group]').addEventListener('click',()=>{preview.hidden=true;form.hidden=false;button.focus();});
   });

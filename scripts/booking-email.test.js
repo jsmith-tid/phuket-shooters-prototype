@@ -83,6 +83,14 @@ test('consumer receipts use the selected language and escape submitted text', as
     assert.match(sent[1].html, new RegExp(`<html lang="${lang}"`));
     if (lang === 'ar') assert.match(sent[1].html, /dir="rtl"/);
     assert.match(sent[1].html, /&lt;script&gt;/);
+    assert.match(sent[1].html, /name="viewport"/);
+    assert.match(sent[1].html, /phuket-shooters-location-map\.png/);
+    assert.match(sent[1].html, /© OpenStreetMap contributors · ODbL/);
+    assert.match(sent[1].html, /maps\.apple\.com/);
+    assert.match(sent[1].html, /google\.com\/maps\/dir/);
+    assert.match(sent[1].text, /openstreetmap\.org/);
+    assert.ok(sent[1].text.includes('<A & B>'));
+    assert.match(sent[1].html, /<img [^>]+alt="[^"]+"/);
     assert.deepEqual(sent[0].to, ['staff@example.org']);
   }
 });
@@ -101,6 +109,8 @@ test('group requests send staff and localized customer receipts with validated d
     assert.deepEqual(sent.map(([email]) => email.to), [['staff@example.org'], ['customer@example.org']]);
     assert.equal(sent[1][0].subject, subject);
     assert.match(sent[1][0].html, /&lt;script&gt;/);
+    assert.match(sent[1][0].html, /phuket-shooters-location-map\.png/);
+    assert.match(sent[1][0].text, /maps\.apple\.com/);
     assert.ok(!sent[1][0].html.includes('<script>'));
     assert.notEqual(sent[0][1], sent[1][1]);
     assert.equal((await submit(input)).status, 200);
@@ -110,4 +120,25 @@ test('group requests send staff and localized customer receipts with validated d
   assert.equal(validateGroup({ ...group('en'), lang: 'ru' }), null);
   assert.equal(validateGroup({ ...group('en'), visitors: '0' }), null);
   assert.equal(validateGroup({ ...group('en'), coaches: '-1' }), null);
+});
+
+test('contact fields and visit times reject common mistakes without changing useful text', async () => {
+  const { validate, validateGroup } = await bookingModule;
+  const consumer = enquiry();
+  assert.equal(validate({ ...consumer, email: 'a@b..c' }), null);
+  assert.equal(validate({ ...consumer, phone: '123' }), null);
+  assert.equal(validate({ ...consumer, phone: '+66 (81) 123-4567' }).phone, '+66 (81) 123-4567');
+  assert.equal(validate({ ...consumer, phone: '+๖๖ ๘๑ ๑๒๓ ๔๕๖๗' }).phone, '+66 81 123 4567');
+  assert.equal(validate({ ...consumer, email: 'name@example.xn--p1ai' }).email, 'name@example.xn--p1ai');
+  assert.equal(validate({ ...consumer, name: 'A\u0000B' }), null);
+  assert.equal(validate({ ...consumer, name: '  A   B  ' }).name, 'A B');
+  assert.equal(validate({ ...consumer, extra: ' First\r\nSecond ' }).extra, 'First\nSecond');
+
+  const group = { submissionId: crypto.randomUUID(), lang: 'en', company: '', name: 'Agent', email: 'agent@example.org', phone: '', date: date(), time: '09:00', visitors: '999', coaches: '20', activities: '', questions: '' };
+  assert.ok(validateGroup(group));
+  for (const change of [
+    { email: 'a@b..c' }, { phone: '123' }, { time: '08:59' }, { time: '18:00' },
+    { visitors: '1000' }, { coaches: '21' }
+  ]) assert.equal(validateGroup({ ...group, ...change }), null);
+  assert.equal(validateGroup({ ...group, phone: '+44 20 7946 0958', time: '17:59' }).time, '17:59');
 });

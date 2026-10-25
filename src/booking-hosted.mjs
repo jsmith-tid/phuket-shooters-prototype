@@ -2,13 +2,13 @@ import { createBookingService, createGroupService, validate, validateGroup } fro
 import { verifyTurnstile } from './turnstile.mjs';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const json = (status, body) => new Response(JSON.stringify(body), {
+const json = (status, body, extraHeaders = {}) => new Response(JSON.stringify(body), {
   status,
-  headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+  headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...extraHeaders }
 });
 
 function bookingChecks(env = {}) {
-  const inbox = env.RESEND_TEST_INBOX?.trim();
+  const inbox = (env.BOOKING_STAFF_INBOX === undefined ? env.RESEND_TEST_INBOX : env.BOOKING_STAFF_INBOX)?.trim();
   const allowedEmails = (env.BOOKING_ALLOWED_EMAILS || '').split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
   return {
     enabledFlag: env.BOOKING_EMAIL_ENABLED === 'true',
@@ -24,8 +24,8 @@ export function bookingConfig(env = {}) {
   const turnstileEnabled = env.TURNSTILE_ENABLED === 'true';
   const siteKey = env.TURNSTILE_SITE_KEY?.trim();
   const secret = env.TURNSTILE_SECRET_KEY?.trim();
-  if (turnstileEnabled && (!siteKey || !secret || !env.BOOKING_RATE_LIMITER?.limit)) return null;
-  const inbox = env.RESEND_TEST_INBOX.trim();
+  if (turnstileEnabled && (!siteKey || !secret || !env.BOOKING_RATE_LIMITER?.limit || !env.BOOKING_IP_RATE_LIMITER?.limit)) return null;
+  const inbox = (env.BOOKING_STAFF_INBOX === undefined ? env.RESEND_TEST_INBOX : env.BOOKING_STAFF_INBOX).trim();
   const allowedEmails = env.BOOKING_ALLOWED_EMAILS.split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
   return { apiKey: env.RESEND_API_KEY.trim(), inbox, allowedEmails, sender: env.RESEND_FROM_EMAIL?.trim() || undefined,
     turnstile: turnstileEnabled ? { siteKey, secret } : null };
@@ -73,10 +73,17 @@ async function handleEnquiry(context, fetcher, validateInput, createService, act
   if (!details) return json(400, { result: 'invalid' });
   if (!config.allowedEmails.includes(details.email.toLowerCase())) return json(403, { result: 'forbidden' });
   if (config.turnstile) {
-    let limited;
-    try { limited = await context.env.BOOKING_RATE_LIMITER.limit({ key: `${action}:${details.email.toLowerCase()}` }); }
+    // The shared IP ceiling catches address rotation; the email ceiling also
+    // spans both forms. Cloudflare rate limits are approximate and per location.
+    const clientIp = request.headers.get('cf-connecting-ip')?.trim();
+    if (!clientIp) return json(503, { result: 'unavailable' });
+    let ipLimit, emailLimit;
+    try {
+      ipLimit = await context.env.BOOKING_IP_RATE_LIMITER.limit({ key: `booking:ip:${clientIp}` });
+      if (ipLimit.success) emailLimit = await context.env.BOOKING_RATE_LIMITER.limit({ key: `booking:email:${details.email.toLowerCase()}` });
+    }
     catch { return json(503, { result: 'unavailable' }); }
-    if (!limited.success) return json(429, { result: 'rate_limited' });
+    if (!ipLimit.success || !emailLimit.success) return json(429, { result: 'rate_limited' }, { 'Retry-After': '60' });
     const challenge = await verifyTurnstile({ token: parsed.input.turnstileToken, secret: config.turnstile.secret,
       hostname: new URL(request.url).hostname, action, remoteIp: request.headers.get('cf-connecting-ip'), fetcher });
     if (!challenge.ok) return json(challenge.reason === 'unavailable' ? 503 : 403, { result: `challenge_${challenge.reason}` });
@@ -88,11 +95,18 @@ async function handleEnquiry(context, fetcher, validateInput, createService, act
       body: JSON.stringify(email),
       signal: AbortSignal.timeout(12000)
     });
-    if (!response.ok) throw new Error(`Resend rejected email: HTTP ${response.status}`);
+    if (!response.ok) {
+      const error = new Error('Resend rejected email');
+      error.status = response.status;
+      throw error;
+    }
     return response.json();
   };
   // Resend's per-email idempotency keys protect retries across Worker instances.
-  const submit = createService({ send, inbox: config.inbox, sender: config.sender });
+  const submit = createService({ send, inbox: config.inbox, sender: config.sender, onEvent: event => {
+    const log = event.event === 'email_accepted' ? console.info : event.event === 'email_rejected' || event.event === 'email_partial' || event.event === 'email_failed' ? console.error : console.warn;
+    log(JSON.stringify({ service: 'booking_delivery', ...event }));
+  } });
   const result = await submit(parsed.input);
   return json(result.status, result.body);
 }

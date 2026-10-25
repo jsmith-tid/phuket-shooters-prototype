@@ -6,11 +6,11 @@ require('./build');
 const root = path.resolve(__dirname, '../dist');
 const port = Number(process.env.PORT || 8080);
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.txt': 'text/plain; charset=utf-8' };
-const inbox = process.env.RESEND_TEST_INBOX?.trim();
+const inbox = (process.env.BOOKING_STAFF_INBOX === undefined ? process.env.RESEND_TEST_INBOX : process.env.BOOKING_STAFF_INBOX)?.trim();
 let apiKey = process.env.RESEND_API_KEY?.trim();
 if (!apiKey && process.env.RESEND_API_KEY_FILE) apiKey = fs.readFileSync(process.env.RESEND_API_KEY_FILE, 'utf8').trim();
-if ((apiKey && !inbox) || (!apiKey && inbox)) throw new Error('Set both a Resend API key and RESEND_TEST_INBOX, or neither.');
-if (inbox && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inbox)) throw new Error('RESEND_TEST_INBOX must be an email address.');
+if ((apiKey && !inbox) || (!apiKey && inbox)) throw new Error('Set both a Resend API key and BOOKING_STAFF_INBOX, or neither.');
+if (inbox && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inbox)) throw new Error('BOOKING_STAFF_INBOX must be an email address.');
 
 const send = async (email, idempotencyKey) => {
   const response = await fetch('https://api.resend.com/emails', {
