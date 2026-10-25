@@ -1,6 +1,6 @@
 # Booking enquiry email: current prototype setup
 
-This document records the **implemented and tested** individual enquiry flow, the new group-request implementation, and what is still needed before unrestricted public use. The group flow has automated tests but still needs a hosted inbox test after deployment. It is not a production runbook. The existing live site at `phuketshooters.com` and its booking and email systems have not been changed. The prototype domain is `phuket-shooters.com` (with a hyphen).
+This document records the **implemented and tested** individual enquiry and group-request flows, and what is still needed before unrestricted public use. It is not a production runbook. The existing live site at `phuketshooters.com` and its booking and email systems have not been changed. The prototype domain is `phuket-shooters.com` (with a hyphen).
 
 ## Current scope and hosting
 
@@ -57,6 +57,8 @@ On 25 October 2026, the owner submitted a controlled enquiry on the hosted proto
 ## Group enquiries: separate decision
 
 The separate `/api/group-enquiry` endpoint validates the group fields and sends two messages: an English staff notification and a customer receipt in English, Thai or Chinese. The receipt and on-page result show submitted details and explicitly say that neither the visit nor coach parking has been reserved. The group request follows the same controlled hosted allowlist and Resend settings as the individual form. Before unrestricted public release, add abuse protection and monitoring, confirm staff handling, and resolve the business questions in `docs/launch-checks.md`.
+
+On 25 October 2026, the owner reported a successful controlled group request on the hosted prototype: the staff and customer messages arrived at their respective addresses, and the confirmation page appeared. The language used for this test was not specified. This confirms the tested submission path, not unrestricted public readiness or a confirmed booking.
 
 ## Before opening either form to all visitors
 
