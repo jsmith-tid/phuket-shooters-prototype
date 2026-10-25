@@ -119,6 +119,9 @@ html[dir="rtl"] .footer-social h2{direction:rtl;text-align:left}
 .group-field__error{display:block;margin-top:.3rem;color:#a91f24;font-size:.78rem}
 .group-error-summary{margin:1.2rem 0;border-left:4px solid var(--red);background:#f7e8e5;padding:.8rem 1rem;font-weight:700}
 .group-request-form>.button{margin-top:1.5rem}
+.form-security{max-width:100%;min-width:0;margin-top:1.25rem;outline-offset:4px}
+.form-security>div{max-width:100%}
+.form-security__status{min-height:1.25em;margin:.35rem 0 0;color:var(--muted);font-size:.82rem}
 .group-preview h2{font-size:clamp(1.7rem,3vw,2.5rem)}.group-preview p{color:#55595d}
 .group-preview dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:2rem 0}.group-preview dl>div{border-top:1px solid var(--line);padding-top:.8rem}.group-preview dt{color:var(--muted);font-size:.75rem;font-weight:700;text-transform:uppercase}.group-preview dd{margin:.3rem 0 0;font-size:1.1rem;font-weight:800;overflow-wrap:anywhere}
 .group-request-form[hidden],.group-preview[hidden],.group-error-summary[hidden],.group-field__error[hidden],.group-preview [hidden]{display:none!important}

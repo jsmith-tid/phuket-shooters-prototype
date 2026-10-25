@@ -106,3 +106,61 @@ test('hosted group endpoint uses the existing inbox and allowlist', async () => 
   assert.equal((await handleGroup(context(payload, { ...enabled, BOOKING_EMAIL_ENABLED: 'false' }), fakeFetch)).status, 503);
   assert.equal(sent.length, 2);
 });
+
+test('Turnstile mode requires both keys and a rate limiter, and exposes only the public key', async () => {
+  const { bookingConfig, bookingMode } = await hostedModule;
+  const limiter = { limit: async () => ({ success: true }) };
+  assert.equal(bookingConfig({ ...enabled, TURNSTILE_ENABLED: 'true' }), null);
+  assert.equal(bookingConfig({ ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private' }), null);
+  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private', BOOKING_RATE_LIMITER: limiter };
+  assert.deepEqual(await (await bookingMode({ env })).json(), { enabled: true, turnstileSiteKey: 'public' });
+  assert.ok(!(await (await bookingMode({ env })).text()).includes('private'));
+});
+
+test('both enquiry endpoints verify Turnstile before sending and rate-limit by email', async () => {
+  const { handleBooking, handleGroup } = await hostedModule;
+  const keys = [];
+  let allowed = true, valid = true, sends = 0;
+  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private',
+    BOOKING_RATE_LIMITER: { limit: async ({ key }) => { keys.push(key); return { success: allowed }; } } };
+  const fakeFetch = async (url, options) => {
+    if (url.includes('siteverify')) {
+      assert.equal(options.body.get('secret'), 'private');
+      assert.equal(options.body.get('response'), 'token');
+      return Response.json({ success: valid, hostname: 'prototype.example', action: sends === 0 ? 'consumer_enquiry' : 'group_enquiry' });
+    }
+    sends++;
+    return Response.json({ id: String(sends) });
+  };
+  const consumer = { ...input(), turnstileToken: 'token' };
+  assert.equal((await handleBooking(context({ ...consumer, turnstileToken: '' }, env), fakeFetch)).status, 403);
+  assert.equal(sends, 0);
+  valid = false;
+  assert.equal((await handleBooking(context(consumer, env), fakeFetch)).status, 403);
+  assert.equal(sends, 0);
+  valid = true;
+  assert.equal((await handleBooking(context(consumer, env), fakeFetch)).status, 200);
+  assert.equal(sends, 2);
+  allowed = false;
+  assert.equal((await handleBooking(context({ ...consumer, submissionId: randomUUID() }, env), fakeFetch)).status, 429);
+  assert.equal(sends, 2);
+  allowed = true;
+  const group = { submissionId: randomUUID(), lang: 'zh', company: 'Tour operator', name: 'Agent', email: 'first@example.org', phone: '', date: today(), time: '', visitors: '40', coaches: '1', activities: '', questions: '', turnstileToken: 'token' };
+  assert.equal((await handleGroup(context(group, env), fakeFetch)).status, 200);
+  assert.equal(sends, 4);
+  assert.deepEqual(keys.slice(-2), ['consumer_enquiry:first@example.org', 'group_enquiry:first@example.org']);
+});
+
+test('Turnstile hostname or action mismatch and verification outage send no email', async () => {
+  const { handleBooking } = await hostedModule;
+  const env = { ...enabled, TURNSTILE_ENABLED: 'true', TURNSTILE_SITE_KEY: 'public', TURNSTILE_SECRET_KEY: 'private', BOOKING_RATE_LIMITER: { limit: async () => ({ success: true }) } };
+  const payload = { ...input(), turnstileToken: 'token' };
+  let sends = 0;
+  const mismatch = async () => Response.json({ success: true, hostname: 'other.example', action: 'consumer_enquiry' });
+  assert.equal((await handleBooking(context(payload, env), mismatch)).status, 403);
+  const wrongAction = async () => Response.json({ success: true, hostname: 'prototype.example', action: 'group_enquiry' });
+  assert.equal((await handleBooking(context(payload, env), wrongAction)).status, 403);
+  const outage = async () => { sends++; return Response.json({}, { status: 503 }); };
+  assert.equal((await handleBooking(context(payload, env), outage)).status, 503);
+  assert.equal(sends, 1);
+});

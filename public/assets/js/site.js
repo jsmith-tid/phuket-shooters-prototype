@@ -5,12 +5,42 @@
   const language=document.querySelector('[data-language]'), languageButton=language?.querySelector('button'), languageMenu=language?.querySelector('.language__menu');
   languageButton?.addEventListener('click',()=>{const open=languageButton.getAttribute('aria-expanded')==='true';languageButton.setAttribute('aria-expanded',String(!open));languageMenu.hidden=open;});
   document.addEventListener('click',e=>{if(language&&!language.contains(e.target)){languageButton.setAttribute('aria-expanded','false');languageMenu.hidden=true;}});
+  const securityCopy={
+    en:{checking:'Checking your browser…',wait:'Please complete the security check before sending.',error:'The security check could not finish. Please retry or contact us directly.',limited:'Too many requests just now. Please wait a minute before trying again.'},
+    th:{checking:'กำลังตรวจสอบเบราว์เซอร์…',wait:'กรุณาทำการตรวจสอบความปลอดภัยก่อนส่ง',error:'ไม่สามารถตรวจสอบความปลอดภัยได้ โปรดลองอีกครั้งหรือติดต่อเราโดยตรง',limited:'มีคำขอมากเกินไปในขณะนี้ โปรดรอสักครู่แล้วลองอีกครั้ง'},
+    zh:{checking:'正在检查浏览器…',wait:'发送前请完成安全验证。',error:'安全验证未能完成。请重试或直接联系我们。',limited:'当前请求过多。请稍等一分钟后重试。'},
+    ar:{checking:'جارٍ التحقق من المتصفح…',wait:'يرجى إكمال التحقق الأمني قبل الإرسال.',error:'تعذر إكمال التحقق الأمني. يرجى المحاولة مجددًا أو التواصل معنا مباشرة.',limited:'هناك طلبات كثيرة الآن. يرجى الانتظار دقيقة ثم المحاولة مجددًا.'},
+    ru:{checking:'Проверяем браузер…',wait:'Пройдите проверку безопасности перед отправкой.',error:'Не удалось завершить проверку. Повторите попытку или свяжитесь с нами напрямую.',limited:'Сейчас слишком много запросов. Подождите минуту и попробуйте снова.'}
+  };
+  const security=securityCopy[document.documentElement.lang.split('-')[0]]||securityCopy.en;
+  let turnstileScript;
+  const loadTurnstile=()=>turnstileScript||=(new Promise((resolve,reject)=>{
+    if(window.turnstile){resolve(window.turnstile);return;}
+    const script=document.createElement('script');script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.async=true;script.defer=true;
+    script.onload=()=>window.turnstile?resolve(window.turnstile):reject(Error('Turnstile unavailable'));
+    script.onerror=()=>reject(Error('Turnstile unavailable'));document.head.append(script);
+  }));
+  const attachChallenge=(form,siteKey,button,action)=>{
+    if(!siteKey)return null;
+    const panel=document.createElement('div'),widget=document.createElement('div'),status=document.createElement('p');
+    panel.className='form-security';panel.tabIndex=-1;status.className='form-security__status';status.setAttribute('role','status');status.textContent=security.checking;
+    panel.append(widget,status);button.before(panel);
+    let token='',widgetId=null,api=null,loadFailed=false;
+    loadTurnstile().then(turnstile=>{
+      api=turnstile;widgetId=api.render(widget,{sitekey:siteKey,action,appearance:'always',size:'flexible',language:document.documentElement.lang.toLowerCase(),
+        callback:value=>{token=value;status.textContent='';},
+        'expired-callback':()=>{token='';status.textContent=security.wait;},
+        'error-callback':()=>{token='';status.textContent=security.error;},
+        'timeout-callback':()=>{token='';status.textContent=security.wait;}});
+    }).catch(()=>{loadFailed=true;status.textContent=security.error;});
+    return {getToken:()=>token,focus:()=>{status.textContent=loadFailed?security.error:api?security.wait:security.checking;panel.focus();},reset:()=>{token='';if(api&&widgetId!==null)api.reset(widgetId);}};
+  };
   const bookingForm=document.querySelector('[data-prototype-form]');
   if(bookingForm){
     const messages=JSON.parse(bookingForm.dataset.testMessages||'{}'),button=bookingForm.querySelector('button[type="submit"]'),result=bookingForm.querySelector('.form-result');
-    let testEnabled=false,submissionId=null,busy=false;
+    let testEnabled=false,submissionId=null,busy=false,challenge=null;
     fetch('/api/booking-mode',{cache:'no-store'}).then(response=>response.ok?response.json():null).then(mode=>{
-      if(mode?.enabled){testEnabled=true;button.firstChild.textContent=messages.send;}
+      if(mode?.enabled){testEnabled=true;button.firstChild.textContent=messages.send;challenge=attachChallenge(bookingForm,mode.turnstileSiteKey,button,'consumer_enquiry');}
     }).catch(()=>{});
     bookingForm.addEventListener('input',()=>{if(!busy)submissionId=null;});
     bookingForm.addEventListener('submit',async event=>{
@@ -18,10 +48,11 @@
       if(!testEnabled){result.hidden=false;result.focus();return;}
       if(busy)return;
       if(!bookingForm.reportValidity())return;
+      if(challenge&&!challenge.getToken()){challenge.focus();return;}
       busy=true;button.disabled=true;button.firstChild.textContent=messages.sending;result.hidden=true;
       submissionId ||= crypto.randomUUID();
       const values=Object.fromEntries(new FormData(bookingForm));
-      const payload={...values,lang:document.documentElement.lang.split('-')[0],agree:bookingForm.querySelector('.check input').checked,submissionId};
+      const payload={...values,lang:document.documentElement.lang.split('-')[0],agree:bookingForm.querySelector('.check input').checked,submissionId,...(challenge?{turnstileToken:challenge.getToken()}:{})};
       const controls=bookingForm.querySelectorAll('input,textarea');
       controls.forEach(control=>control.disabled=true);
       try{
@@ -49,9 +80,9 @@
           return;
         }
         else if(data.result==='changed'){submissionId=null;result.textContent=messages.changed;}
-        else result.textContent=data.result==='partial'?messages.partial:messages.failed;
+        else result.textContent=data.result==='partial'?messages.partial:data.result==='rate_limited'?security.limited:data.result?.startsWith('challenge_')?security.error:messages.failed;
       }catch{result.textContent=messages.failed;}
-      finally{busy=false;button.disabled=false;button.firstChild.textContent=messages.send;controls.forEach(control=>control.disabled=false);}
+      finally{busy=false;button.disabled=false;button.firstChild.textContent=messages.send;controls.forEach(control=>control.disabled=false);challenge?.reset();}
       result.hidden=false;result.focus();
     });
   }
@@ -61,9 +92,9 @@
     const preview=form.parentElement.querySelector('[data-group-preview]');
     const summary=form.querySelector('.group-error-summary');
     const button=form.querySelector('[data-preview-group]');
-    let sendEnabled=false,submissionId=null,busy=false;
+    let sendEnabled=false,submissionId=null,busy=false,challenge=null;
     fetch('/api/booking-mode',{cache:'no-store'}).then(response=>response.ok?response.json():null).then(mode=>{
-      if(mode?.enabled){sendEnabled=true;button.type='submit';button.firstChild.textContent=sendMessages.send;document.querySelector('[data-group-request-intro]').textContent=sendMessages.intro;}
+      if(mode?.enabled){sendEnabled=true;button.type='submit';button.firstChild.textContent=sendMessages.send;document.querySelector('[data-group-request-intro]').textContent=sendMessages.intro;challenge=attachChallenge(form,mode.turnstileSiteKey,button,'group_enquiry');}
     }).catch(()=>{});
     const input=name=>form.elements.namedItem(name);
     const showError=(name,message)=>{const field=input(name),error=form.querySelector(`#group-${name}-error`);field.setAttribute('aria-invalid','true');field.setAttribute('aria-describedby',error.id);error.textContent=message;error.hidden=false;};
@@ -98,10 +129,11 @@
       event.preventDefault();
       if(!sendEnabled||busy)return;
       const values=validateValues();if(!values)return;
+      if(challenge&&!challenge.getToken()){challenge.focus();return;}
       busy=true;button.disabled=true;button.firstChild.textContent=sendMessages.sending;submissionId ||= crypto.randomUUID();
       const controls=form.querySelectorAll('input,textarea');controls.forEach(control=>control.disabled=true);
       try{
-        const response=await fetch('/api/group-enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...values,lang:form.dataset.language,submissionId}),cache:'no-store'});
+        const response=await fetch('/api/group-enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...values,lang:form.dataset.language,submissionId,...(challenge?{turnstileToken:challenge.getToken()}:{})}),cache:'no-store'});
         const data=await response.json();
         if(data.result==='accepted'&&data.details){
           preview.querySelector('h2').textContent=sendMessages.title;
@@ -117,9 +149,9 @@
         }
         if(data.result==='accepted')summary.textContent=sendMessages.outdated;
         else if(data.result==='changed'){submissionId=null;summary.textContent=sendMessages.changed;}
-        else summary.textContent=data.result==='partial'?sendMessages.partial:sendMessages.failed;
+        else summary.textContent=data.result==='partial'?sendMessages.partial:data.result==='rate_limited'?security.limited:data.result?.startsWith('challenge_')?security.error:sendMessages.failed;
       }catch{summary.textContent=sendMessages.failed;}
-      finally{busy=false;button.disabled=false;button.firstChild.textContent=sendMessages.send;controls.forEach(control=>control.disabled=false);}
+      finally{busy=false;button.disabled=false;button.firstChild.textContent=sendMessages.send;controls.forEach(control=>control.disabled=false);challenge?.reset();}
       summary.hidden=false;summary.focus();
     });
     preview.querySelector('[data-edit-group]').addEventListener('click',()=>{preview.hidden=true;form.hidden=false;button.focus();});

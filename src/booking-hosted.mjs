@@ -1,4 +1,5 @@
 import { createBookingService, createGroupService, validate, validateGroup } from '../scripts/booking-email.mjs';
+import { verifyTurnstile } from './turnstile.mjs';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const json = (status, body) => new Response(JSON.stringify(body), {
@@ -20,12 +21,20 @@ function bookingChecks(env = {}) {
 export function bookingConfig(env = {}) {
   const checks = bookingChecks(env);
   if (!Object.values(checks).every(Boolean)) return null;
+  const turnstileEnabled = env.TURNSTILE_ENABLED === 'true';
+  const siteKey = env.TURNSTILE_SITE_KEY?.trim();
+  const secret = env.TURNSTILE_SECRET_KEY?.trim();
+  if (turnstileEnabled && (!siteKey || !secret || !env.BOOKING_RATE_LIMITER?.limit)) return null;
   const inbox = env.RESEND_TEST_INBOX.trim();
   const allowedEmails = env.BOOKING_ALLOWED_EMAILS.split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
-  return { apiKey: env.RESEND_API_KEY.trim(), inbox, allowedEmails, sender: env.RESEND_FROM_EMAIL?.trim() || undefined };
+  return { apiKey: env.RESEND_API_KEY.trim(), inbox, allowedEmails, sender: env.RESEND_FROM_EMAIL?.trim() || undefined,
+    turnstile: turnstileEnabled ? { siteKey, secret } : null };
 }
 
-export const bookingMode = ({ env }) => json(200, { enabled: Boolean(bookingConfig(env)) });
+export const bookingMode = ({ env }) => {
+  const config = bookingConfig(env);
+  return json(200, { enabled: Boolean(config), ...(config?.turnstile ? { turnstileSiteKey: config.turnstile.siteKey } : {}) });
+};
 export const methodNotAllowed = () => json(405, { result: 'method_not_allowed' });
 
 async function readJson(request) {
@@ -53,7 +62,7 @@ async function readJson(request) {
   } catch { return { status: 400, body: { result: 'invalid' } }; }
 }
 
-async function handleEnquiry(context, fetcher, validateInput, createService) {
+async function handleEnquiry(context, fetcher, validateInput, createService, action) {
   const { request } = context;
   const config = bookingConfig(context.env);
   if (!config) return json(503, { result: 'unavailable' });
@@ -63,6 +72,15 @@ async function handleEnquiry(context, fetcher, validateInput, createService) {
   const details = validateInput(parsed.input);
   if (!details) return json(400, { result: 'invalid' });
   if (!config.allowedEmails.includes(details.email.toLowerCase())) return json(403, { result: 'forbidden' });
+  if (config.turnstile) {
+    let limited;
+    try { limited = await context.env.BOOKING_RATE_LIMITER.limit({ key: `${action}:${details.email.toLowerCase()}` }); }
+    catch { return json(503, { result: 'unavailable' }); }
+    if (!limited.success) return json(429, { result: 'rate_limited' });
+    const challenge = await verifyTurnstile({ token: parsed.input.turnstileToken, secret: config.turnstile.secret,
+      hostname: new URL(request.url).hostname, action, remoteIp: request.headers.get('cf-connecting-ip'), fetcher });
+    if (!challenge.ok) return json(challenge.reason === 'unavailable' ? 503 : 403, { result: `challenge_${challenge.reason}` });
+  }
   const send = async (email, idempotencyKey) => {
     const response = await fetcher('https://api.resend.com/emails', {
       method: 'POST',
@@ -79,5 +97,5 @@ async function handleEnquiry(context, fetcher, validateInput, createService) {
   return json(result.status, result.body);
 }
 
-export const handleBooking = (context, fetcher = fetch) => handleEnquiry(context, fetcher, validate, createBookingService);
-export const handleGroup = (context, fetcher = fetch) => handleEnquiry(context, fetcher, validateGroup, createGroupService);
+export const handleBooking = (context, fetcher = fetch) => handleEnquiry(context, fetcher, validate, createBookingService, 'consumer_enquiry');
+export const handleGroup = (context, fetcher = fetch) => handleEnquiry(context, fetcher, validateGroup, createGroupService, 'group_enquiry');
