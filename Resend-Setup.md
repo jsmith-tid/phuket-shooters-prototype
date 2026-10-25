@@ -52,6 +52,8 @@ Delivery diagnostics and the Resend webhook setup are described in [docs/booking
 
 The customer receipts now use a narrow, inline-styled HTML layout with a plain-text alternative, a locally hosted OpenStreetMap image, and Apple Maps and Google Maps directions links. The image, exact coordinate links, attribution and source notes are described in [docs/email-map.md](docs/email-map.md). The text address and links remain usable when an email client blocks images. The staff notification remains a simple readable message. The form and receipt dates refer to a **preferred visit date**; neither the request nor the receipt reserves it.
 
+Individual customer receipts prominently ask visitors to show the email to reception on arrival. This gives reception the enquiry reference while the existing wording still makes clear that staff must confirm the visit separately. The group receipt does not include this taxi-arrival instruction. Both customer receipts now use the business-marked map image with OpenStreetMap attribution; confirm the marker and entrance coordinates with the business before public release.
+
 `BOOKING_STAFF_INBOX` is the preferred setting for the final staff recipient and takes precedence over the legacy `RESEND_TEST_INBOX`. It supplies the fixed staff notification destination and the reply-to address on customer receipts for **both** forms. Do not set it to a public address until the business confirms that the mailbox is monitored and authorized to receive enquiry details. The old variable remains available for controlled tests during migration.
 
 - Keep the Resend key in the encrypted Cloudflare secret and the allowlist enabled during controlled testing. Do not copy the local key file into the deployment artifact.

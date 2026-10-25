@@ -73,18 +73,27 @@ test('concurrent repeats share one in-flight send', async () => {
   assert.equal(sends, 2);
 });
 
-test('consumer receipts use the selected language and escape submitted text', async () => {
+test('consumer receipts give the reception instruction in the selected language without confirming a booking', async () => {
   const { createBookingService } = await bookingModule;
-  for (const [lang, subject] of Object.entries({ en: 'Your booking enquiry was received', th: 'เราได้รับคำสอบถามของคุณแล้ว', zh: '我们已收到您的预约咨询', ar: 'تم استلام استفسارك بشأن الحجز', ru: 'Ваш запрос на бронирование получен' })) {
+  const expected = {
+    en: ['Your booking enquiry was received', 'Show this email to reception when you arrive'],
+    th: ['เราได้รับคำสอบถามของคุณแล้ว', 'โปรดแสดงอีเมลนี้ต่อพนักงานต้อนรับเมื่อคุณมาถึง'],
+    zh: ['我们已收到您的预约咨询', '到达后请向前台出示此邮件'],
+    ar: ['تم استلام استفسارك بشأن الحجز', 'يرجى إظهار هذا البريد الإلكتروني لموظف الاستقبال عند وصولك'],
+    ru: ['Ваш запрос на бронирование получен', 'По прибытии покажите это письмо сотруднику на стойке регистрации']
+  };
+  for (const [lang, [subject, reception]] of Object.entries(expected)) {
     const sent = [];
     const submit = createBookingService({ inbox: 'staff@example.org', send: async email => { sent.push(email); return { id: String(sent.length) }; } });
     assert.equal((await submit({ ...enquiry(), lang })).status, 200);
     assert.equal(sent[1].subject, subject);
+    assert.ok(sent[1].html.includes(reception));
+    assert.ok(sent[1].text.includes(`*** ${reception} ***`));
     assert.match(sent[1].html, new RegExp(`<html lang="${lang}"`));
     if (lang === 'ar') assert.match(sent[1].html, /dir="rtl"/);
     assert.match(sent[1].html, /&lt;script&gt;/);
     assert.match(sent[1].html, /name="viewport"/);
-    assert.match(sent[1].html, /phuket-shooters-location-map\.png/);
+    assert.match(sent[1].html, /range_map\.png/);
     assert.match(sent[1].html, /© OpenStreetMap contributors · ODbL/);
     assert.match(sent[1].html, /maps\.apple\.com/);
     assert.match(sent[1].html, /google\.com\/maps\/dir/);
@@ -108,8 +117,9 @@ test('group requests send staff and localized customer receipts with validated d
     assert.equal(response.body.details.coaches, 2);
     assert.deepEqual(sent.map(([email]) => email.to), [['staff@example.org'], ['customer@example.org']]);
     assert.equal(sent[1][0].subject, subject);
+    assert.ok(!sent[1][0].html.includes('Show this email to reception when you arrive'));
     assert.match(sent[1][0].html, /&lt;script&gt;/);
-    assert.match(sent[1][0].html, /phuket-shooters-location-map\.png/);
+    assert.match(sent[1][0].html, /range_map\.png/);
     assert.match(sent[1][0].text, /maps\.apple\.com/);
     assert.ok(!sent[1][0].html.includes('<script>'));
     assert.notEqual(sent[0][1], sent[1][1]);
