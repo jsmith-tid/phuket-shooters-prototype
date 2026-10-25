@@ -97,12 +97,13 @@
       if(mode?.enabled){sendEnabled=true;button.type='submit';button.firstChild.textContent=sendMessages.send;document.querySelector('[data-group-request-intro]').textContent=sendMessages.intro;challenge=attachChallenge(form,mode.turnstileSiteKey,button,'group_enquiry');}
     }).catch(()=>{});
     const input=name=>form.elements.namedItem(name);
+    const groupFields=['company','name','email','phone','date','time','visitors','coaches','activities','questions'];
     const showError=(name,message)=>{const field=input(name),error=form.querySelector(`#group-${name}-error`);field.setAttribute('aria-invalid','true');field.setAttribute('aria-describedby',error.id);error.textContent=message;error.hidden=false;};
     const clearError=name=>{const field=input(name),error=form.querySelector(`#group-${name}-error`);field.removeAttribute('aria-invalid');field.removeAttribute('aria-describedby');error.textContent='';error.hidden=true;};
-    form.querySelectorAll('input,textarea').forEach(field=>field.addEventListener('input',()=>{clearError(field.name);if(!busy)submissionId=null;}));
+    groupFields.forEach(name=>input(name).addEventListener('input',()=>{clearError(name);if(!busy)submissionId=null;}));
     const validateValues=()=>{
-      const values=Object.fromEntries([...form.elements].filter(field=>field.name).map(field=>[field.name,field.value.trim()]));
-      form.querySelectorAll('input,textarea').forEach(field=>clearError(field.name));
+      const values=Object.fromEntries(groupFields.map(name=>[name,input(name).value.trim()]));
+      groupFields.forEach(clearError);
       const invalid=[];
       for(const name of ['name','email','date','visitors']) if(!values[name]) invalid.push([name,messages.required]);
       if(values.email && input('email').validity.typeMismatch) invalid.push(['email',messages.email]);
@@ -131,7 +132,7 @@
       const values=validateValues();if(!values)return;
       if(challenge&&!challenge.getToken()){challenge.focus();return;}
       busy=true;button.disabled=true;button.firstChild.textContent=sendMessages.sending;submissionId ||= crypto.randomUUID();
-      const controls=form.querySelectorAll('input,textarea');controls.forEach(control=>control.disabled=true);
+      const controls=groupFields.map(input);controls.forEach(control=>control.disabled=true);
       try{
         const response=await fetch('/api/group-enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...values,lang:form.dataset.language,submissionId,...(challenge?{turnstileToken:challenge.getToken()}:{})}),cache:'no-store'});
         const data=await response.json();
