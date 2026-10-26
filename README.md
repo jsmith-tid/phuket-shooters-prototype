@@ -119,6 +119,8 @@ npm run dev
 
 Open `http://127.0.0.1:8080/book/` (or your chosen `PORT`). With the local endpoint enabled, the button says “Send enquiry”; the server validates the fields, sends the business notification to `RESEND_TEST_INBOX`, and sends the acknowledgement to the **email entered in the form**. Only test with addresses you control. A confirmation screen displays the server-validated submitted details only if Resend accepts both messages; a partial or failed send leaves the form available to retry. Acceptance does not establish inbox delivery or confirm a booking. Check both inboxes and the Resend dashboard separately.
 
+Both enquiry forms stay hidden until their JavaScript handlers are ready. With JavaScript unavailable, visitors see translated phone and WhatsApp contact options instead of a form that could submit personal details through a URL. The forms also declare POST as a fallback method; browser submissions are handled only by the JavaScript API flow.
+
 The localhost server binds to `127.0.0.1`. The API key stays server-side; it is not written to generated assets. With Resend configured locally, the group form also sends to the same staff inbox and entered customer email. GitHub Pages cannot run these endpoints or read a local key file.
 
 ### Controlled Cloudflare Worker test
