@@ -1,10 +1,13 @@
 (() => {
   const toggle=document.querySelector('.nav-toggle'), nav=document.querySelector('.site-nav');
   toggle?.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));nav.classList.toggle('is-open',!open);});
-  document.querySelector('.nav-more > button')?.addEventListener('click',e=>{const open=e.currentTarget.getAttribute('aria-expanded')==='true';e.currentTarget.setAttribute('aria-expanded',String(!open));});
+  const more=document.querySelector('.nav-more'), moreButton=more?.querySelector('button');
   const language=document.querySelector('[data-language]'), languageButton=language?.querySelector('button'), languageMenu=language?.querySelector('.language__menu');
-  languageButton?.addEventListener('click',()=>{const open=languageButton.getAttribute('aria-expanded')==='true';languageButton.setAttribute('aria-expanded',String(!open));languageMenu.hidden=open;});
-  document.addEventListener('click',e=>{if(language&&!language.contains(e.target)){languageButton.setAttribute('aria-expanded','false');languageMenu.hidden=true;}});
+  const closeMore=()=>moreButton?.setAttribute('aria-expanded','false');
+  const closeLanguage=()=>{if(languageButton) languageButton.setAttribute('aria-expanded','false');if(languageMenu) languageMenu.hidden=true;};
+  moreButton?.addEventListener('click',()=>{const open=moreButton.getAttribute('aria-expanded')==='true';closeLanguage();moreButton.setAttribute('aria-expanded',String(!open));});
+  languageButton?.addEventListener('click',()=>{const open=languageButton.getAttribute('aria-expanded')==='true';closeMore();languageButton.setAttribute('aria-expanded',String(!open));languageMenu.hidden=open;});
+  document.addEventListener('click',e=>{if(more&&!more.contains(e.target)) closeMore();if(language&&!language.contains(e.target)) closeLanguage();});
   const securityCopy={
     en:{checking:'Checking your browser…',wait:'Please complete the security check before sending.',error:'The security check could not finish. Try sending again, or contact us directly.',limited:'Too many requests right now. Please wait a minute and try again, or contact us by phone or WhatsApp.'},
     th:{checking:'กำลังตรวจสอบเบราว์เซอร์…',wait:'กรุณาทำการตรวจสอบความปลอดภัยก่อนส่ง',error:'ไม่สามารถตรวจสอบความปลอดภัยได้ โปรดลองส่งอีกครั้งหรือติดต่อเราโดยตรง',limited:'มีคำขอมากเกินไปในขณะนี้ โปรดรอสักครู่แล้วลองอีกครั้ง หรือติดต่อทางโทรศัพท์หรือ WhatsApp'},
